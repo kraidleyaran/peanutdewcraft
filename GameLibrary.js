@@ -1,14 +1,9 @@
 function GameLibrary()
 {
 	var customLibs = new Array();
-	customLibs.objectId = 0;
+
 	customLibs.libTypeNames = new Array();
 	customLibs.emptyIndex = new Array();
-
-	function AutoSort()
-	{
-		customLibs.emptyIndex.sort(function(a,b) {return a-b})
-	}
 
 	this.AddToLibrary = AddToLibrary;
 	this.GetFromLibrary = GetFromLibrary;
@@ -18,6 +13,10 @@ function GameLibrary()
 	this.RemoveLibraryType = RemoveLibraryType;
 	this.GetLibraryFromType = GetLibraryFromType;
 
+	function AutoSort()
+	{
+		customLibs.emptyIndex.sort(function(a,b) {return a-b})
+	}
 
 	function assignId(libraryType)
 	{
@@ -29,8 +28,7 @@ function GameLibrary()
 		{
 			if (customLibs[doesLibExist.returnIndex].emptyIndex.length == 0)
 			{
-				var returnId = customLibs[doesLibExist.returnIndex].objectId
-				customLibs[doesLibExist.returnIndex].objectId++
+				var returnId = customLibs.length;
 				response.objectId = returnId;
 			}
 			else
@@ -70,6 +68,15 @@ function GameLibrary()
 	function AddToLibrary(libraryType, inputObject)
 	{
 		var doesObjExist = DoesObjectExistInLibrary(libraryType, inputObject);
+
+		if (!inputObject.typeName || inputObject.typeName == null)
+		{
+			throw "inputObject must have a typeName. How did you even get here with that crap? I need to look at my code."
+		}
+		else
+		{
+
+		}
 
 		var response;
 
@@ -166,6 +173,7 @@ function GameLibrary()
 		typeString = purifyString(typeString)
 
 		var response = {};
+		var newLibId;
 
 		var doesLibExist = DoesLibraryTypeExist(typeString)
 		if (doesLibExist.bool == true)
@@ -173,26 +181,25 @@ function GameLibrary()
 			throw typeString + 'libraryType already exists at index ' + doesLibExist.returnIndex;
 		}
 		else 
-		{	
-			var typeNameId = customLibs.libTypeNames.push(typeString)
-			typeNameId--
-			
-
+		{				
 			var newCustomLib = new Array();
 			newCustomLib.emptyIndex = new Array();
 			newCustomLib.typeName = typeString;
-			newCustomLib.objectId = 0;
+
+			newCustomLib.objTypeCount = new Array();
 			
 			if (customLibs.emptyIndex.length == 0)
 			{
-				customLibs[customLibs.objectId] = newCustomLib;
-				customLibs.libTypeNames[typeNameId].libId = customLibs.objectId;
-				customLibs.objectId++
+				newLibId = customLibs.length;
+				customLibs[newLibId] = newCustomLib;
+				customLibs.libTypeNames[newLibId] = typeString;
 			}
 			else
 			{
 				AutoSort();
-				customLibs[customLibs.emptyIndex.shift()] = newCustomLib;
+				newLibId = customLibs.emptyIndex.shift()
+				customLibs[newLibId] = newCustomLib;
+				response.returnIndex = newLibId;
 			}
 
 			response.returnTypeName = typeString

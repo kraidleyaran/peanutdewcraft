@@ -28,6 +28,7 @@ var mainGame = (function () {
 		props:{
 			pieceName:{
 				required: true;
+				dataType:
 				
 			}
 		}
