@@ -1,4 +1,4 @@
-function GameLibrary()
+var GameLibrary = function GameLibrary()
 {
 	var customLibs = new Array();
 
@@ -12,6 +12,8 @@ function GameLibrary()
 	this.AddLibraryType = AddLibraryType;
 	this.RemoveLibraryType = RemoveLibraryType;
 	this.GetLibraryFromType = GetLibraryFromType;
+	this.GetLibraryTypes = GetLibraryTypes;
+	this GetLibraries = GetLibraries;
 
 	function AutoSort()
 	{
@@ -245,6 +247,36 @@ function GameLibrary()
 		return response;
 	}
 
+	function GetLibraries()
+	{
+		var response;
+		if (customLibs.length > 0)
+		{
+			response = customLibs;
+		}
+		else
+		{
+			response = null;
+		}
+
+		return response;
+	}
+
+	function GetLibraryTypes()
+	{
+		var response;
+		if (libTypeNames.length > 0)
+		{
+			response = libTypeNames
+		}
+		else
+		{
+			response = null;
+		}
+
+		return response;
+	}
+
 }
 GameLibrary.prototype.GetObjectFromLibrary = function(libraryType, objectId) 
 {
@@ -278,6 +310,16 @@ GameLibrary.prototype.RemoveLibrary = function(libraryType)
 GameLibrary.prototype.GetLibraryFromType = function(libraryType)
 {
 	var response = this.GetLibraryFromType(libraryType)
+	return response;
+}
+GameLibrary.prototype.GetLibraryTypes = function()
+{
+	var response = this.GetLibraryTypes()
+	return response;
+}
+GameLibrary.prototype.GetLibraries = function()
+{
+	var response = this.GetLibraries()
 	return response;
 }
 

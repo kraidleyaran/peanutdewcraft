@@ -1,4 +1,4 @@
-function GameManager(){
+var GameManager = function GameManager(){
 
 	var _gameObjectTypes = new Array();
 	var _gameObjectProtos = new Array();
@@ -7,6 +7,10 @@ function GameManager(){
 
 	this.CreateGameObjectType = CreateGameObjectType;
 	this.CreateGameObject = CreateGameObject;
+	this.SetGameObjectType = SetGameObjectType; //needs GameObserver update
+	this.RemoveGameObjectType = RemoveGameObjectType; //needs GameObserver update
+	this.GetGameObjectTypes = GetGameObjectTypes;
+
 	var _objTypes = ['string','number','boolean','array','object','function']
 
 	var IsAllowedType = function (inputTypeString) 
@@ -219,6 +223,8 @@ function GameManager(){
 					{
 						var currentProps = Object.keys(props)
 						var propIndex = currentProps.indexOf(inputPropString)
+
+3
 
 						var response;
 
@@ -489,7 +495,39 @@ function GameManager(){
 		return response;
 	}	
 
+	function GetGameObjectTypes()
+	{
+		var response;
+		if (_gameObjectTypes > 0 )
+		{
+			response = _gameObjectTypes;
+		}
+		else
+		{
+			response = null;
+		}
+
+		return response;
+
+	}
+
+	function GetGameObjectProtos()
+	{
+		var response;
+		if (_gameObjectProtos > 0 )
+		{
+			response = _gameObjectProtos;
+		}
+		else
+		{
+			response = null;
+		}
+		return response;
+	}
+
 }
+
+
 
 GameManager.prototype.CreateGameObjectType =  function (inputParams)
 {
@@ -500,6 +538,11 @@ GameManager.prototype.CreateGameObjectType =  function (inputParams)
 GameManager.prototype.CreateGameObject = function (inputParams)
 {
 	var response = this.CreateGameObject(inputParams);
+	return response;
+}
+GameManager.prototype.GetGameObjectTypes = function ()
+{
+	var response = this.GetGameObjectTypes();
 	return response;
 }
 

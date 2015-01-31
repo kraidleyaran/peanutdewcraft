@@ -19,7 +19,7 @@ var mainGame = (function () {
 		graphicsDevice: graphicsDevice
 	})
 
-	var MyGameLibrary = new GameLibrary();
+	
 
 	var MyGameManager = new GameManager();
 
