@@ -1,26 +1,42 @@
-var GameManager = function GameManager(){
+function GameManager(){
 
-	var _gameObjectTypes = new Array();
-	var _gameObjectProtos = new Array();
-	var _gameObjectId = 0;
-	var _gameEmptyIndex = new Array();
+	var _gameObjectTypes = {};
+	var _gameObjectProtos = {};
+	
+	//these were used for storing Object protos efficiently, but I found a better way using associate arrays aka actual objects.
+	//var _gameObjectId = 0;
+	//var _gameEmptyIndex = new Array();
+
+	var _gameObserver = null;
+
+	this.SetGameObserver = SetGameObserver;
+
+	var _myOwnDamneGameManager = "This is a random string I put in here that forces you to copy / change this in the understanding you are purposely using your own GameManager instead of mine. Good luck with that."
+
+	
+	this.CreateGameObject = CreateGameObject;
 
 	this.CreateGameObjectType = CreateGameObjectType;
-	this.CreateGameObject = CreateGameObject;
 	this.SetGameObjectType = SetGameObjectType; //needs GameObserver update
 	this.RemoveGameObjectType = RemoveGameObjectType; //needs GameObserver update
 	this.GetGameObjectTypes = GetGameObjectTypes;
 
+	this.CreateProtoFromExisting = CreateProtoFromExisting;
+	this.GetGameObjectProtos = GetGameObjectProtos;
+
+	this.IsGameManagerValid = IsGameManagerValid;
+
+	this.CloneGameObject = CloneGameObject;
+
 	var _objTypes = ['string','number','boolean','array','object','function']
 
-	var IsAllowedType = function (inputTypeString) 
+	function IsAllowedType(inputTypeString) 
 	{
-		var response;
+		var response = {};
 		if (!inputTypeString || inputTypeString == null)
 		{
 			throw "inputType string is undefined or null" + "\n\r" + "inputTypeString = " + inputTypeString;
 		}
-
 		
 		var isStringInArray = _objTypes.indexOf(inputTypeString)
 		if (isStringInArray < 0)
@@ -35,18 +51,32 @@ var GameManager = function GameManager(){
 		return response;
 	}
 	/*When creating a new GameObject type, you must include the following in objParams:
-		objsParams.typeName = "game object type name" -
+		objsParams.typeName = the prototypes gameObject type. This is used to group objects together for updating or broadcasting changes.
 		objsParams.props[] = an array with objects that contain the following two properties: (where i = property name)
 			props[i].required = a boolean indicating whether or not the property in question will be required for an object when making new instances of it 
-			props[i] = one of the _objTypes listed above as a private variable. Ctrl+F that shit.
+			props[i].dataValue = one of the _objTypes listed above as a private variable. Ctrl+F that shit.
+
+			example:
+				var objParams = {}
+				var newPropName = 'health'
+				objParams.typeName = "this is my new game object, it's pretty awesome"
+				objParams.props = []
+				objParams.props[0] = {
+					'propName' = 'object property name'
+					'required' = true
+					'dataValue' = type of data the property will be set to
+					'defaultPropValue' = the default value that will be set if nothing is sent during creation. This does not affect properties that are 'required.'
+				}
+				
+
 
 		Please note that an object cannot contain typename or any variation there of as a property name unless another word is before, between, or after type and name. That includes any symbol attached to typeName
 		*/
 	function CreateGameObjectType(objParams)
 	{
-		var returnObj = new Object();
+		var returnObj = {};
 
-		var paramsTypeName = objParams.typeName
+		var paramsTypeName = objParams.typeName;
 
 		if (!paramsTypeName || paramsTypeName == null)
 		{
@@ -55,45 +85,45 @@ var GameManager = function GameManager(){
 		
 		var doesObjTypeExist = DoesGameObjectTypeExist(paramsTypeName);
 
-		if (doesObjTypeExist.bool == false)
+		if (doesObjTypeExist == false)
 		{
 			var cleanParamsTypeName = purifyString(paramsTypeName);
 
 			returnObj.typeName = paramsTypeName;
 
-			_gameObjectTypes[_gameObjectTypes.length] = cleanParamsTypeName
+			//_gameObjectTypes[_gameObjectTypes.length] = cleanParamsTypeName
 
-			var objParamsProps = Object.keys(objParams.props);
+			var objParamsProps = objParams.props;
 			var checkTypeNameString = "typeName"
 			var cleanTypeNameString = purifyString(checkTypeNameString);
-			var requireType = typeof objParams.props[currentObjPropString].require;
+
+
+			//var requireType = typeof objParams.props[currentObjPropString].required; <-- not sure why I thought I needed to do that? O.o
 
 			for (iiProp = 0; iiProp < objParamsProps.length; iiProp++)
 			{
-				var currentObjPropString = objParamsProps[iiProp]
+				var currentInputProp = objParamsProps[iiProp]
+				var currentObjPropString = currentInputProp.propName
 				var cleanObjPropName = purifyString(currentObjPropString);
 				// the following is done so in order to prevent any sort of property naming shenanigans do not include the typeName. I throw you the warning letting you know you're a dumbass and to try again
 				if (cleanObjPropName == cleanTypeNameString)
 				{
 					throw "Cannot name property typeName (regardless of capitalization or trickery). Make sure if you're setting the type name in the params.props variable to set it in params.typeName"
 				}
-				else if (requireType != 'boolean')
-				{
-					throw 'objParams.require must be a boolean. Current = ' + requireType;
-				}
 				else
 				{
-					var currentObjKey = objParams.props[currentObjPropString]
-					var isKeyTypeValid = IsAllowedType(currentObjKey);
-
-					if(isKeyTypeValid == true)
+					var currentPropDataValue = currentInputProp.dataValue;
+					var isKeyTypeValid = IsAllowedType(currentPropDataValue);
+					if(isKeyTypeValid.bool == true)
 					{
-						returnObj[currentObjPropString] = currentObjKey;
-						returnObj[currentObjPropString].require = objParams.props[currentObjPropString].require
+						returnObj[currentObjPropString] = {};
+						returnObj[currentObjPropString].required = currentInputProp.required
+						returnObj[currentObjPropString].dataValue = currentPropDataValue
+						returnObj[currentObjPropString].defaultPropValue = currentInputProp.defaultPropValue;
 					}
 					else
 					{
-						throw currentObjKey + "is not a valid data type n00b. Try again. " + "\n\r" + _objTypes
+						throw currentPropDataValue + " is not a valid data type n00b. Try again. " + "\n\r" + _objTypes
 					}
 					
 				}
@@ -105,37 +135,155 @@ var GameManager = function GameManager(){
 			throw "gameObject Type " + paramsTypeName + " already exists"
 		}
 
-		_gameObjectProtos[_gameObjectId] = returnObj;
+		_gameObjectProtos[paramsTypeName] = returnObj;
 		return paramsTypeName;
+	}
+	/*
+
+		inputParamsNewProto.typeName
+		inputParamsNewProto.props = []
+		inputParamsNewProto.props[0] = {
+			'propName' = 'object property name'
+			'required' = true
+			'dataValue' = type of data the property will be set to
+			'defaultPropValue' = the default value that will be set if nothing is sent during creation. This does not affect properties that are 'required.'
+			'command' = 'add', 'remove', or 'set'
+		}
+			The props array for creating a proto from an existing proto will let you add more properties from the proto you've already created or assure you do not carry over certain properties from the base
+			
+	*/
+	function CreateProtoFromExisting(baseProtoString, inputParamsNewProto)
+	{
+		var baseProto;
+		var newProto = {}
+
+		var newTypeName = inputParamsNewProto.typeName;
+
+		var _typeExist = DoesGameObjectTypeExist(baseProtoString)
+
+		if (_typeExist == true)
+		{
+			baseProto = _gameObjectProtos[baseProtoString];
+		}
+		else
+		{
+			throw "Base proto game object does not exist"
+		}
+
+		if (!baseProto)
+		{
+			throw 'Base proto is invalid'
+			return;
+		}
+
+		var inputProps = inputParamsNewProto.props;
+
+		var skipProps = {};
+
+		for (iiInputProp = 0; iiInputProp < inputProps.length; iiInputProp++)
+		{
+			var currentInputProp = inputProps[iiInputProp];
+
+			var checkTypeNameString = 'typename'
+			var cleanPropName = purifyString(currentInputProp.propName)
+			var doesBaseHaveProp = baseProto.hasOwnProperty(currentInputProp.propName)
+
+			switch(currentInputProp.command)
+			{
+				case 'add':
+					if (doesBaseHaveProp == true)
+					{
+						throw 'Cannot add ' + currentInputProp.propName + ' because it already exists in the base proto game object.'
+						return;
+					}
+					else if (cleanPropName == checkTypeNameString)
+					{
+						throw 'Cannot add property named "typeName" or any variation thereof.'
+						return;
+					}
+					newProto[currentInputProp.propName] = {
+						'dataValue': currentInputProp.dataValue,
+						'defaultPropValue': currentInputProp.defaultPropValue,
+						'required': currentInputProp.required
+					}
+					break;
+				case 'remove':
+					if (doesBaseHaveProp == false)
+					{
+						throw 'Cannot delete property ' + currentInputProp.propName + ' because it does not exist in ' + baseProto;
+						return;
+					}
+					skipProps[currentInputProp.propName] = true;
+					break;
+				case 'set':
+					if (doesBaseHaveProp == false)
+					{
+						throw 'Cannot set property ' + currentInputProp.propName + ' because it does not exist';
+						return;
+					}
+					if (currentProp.dataValue)
+					{
+						newProto[currentProp.propName].dataValue = currentProp.dataValue;
+					}
+					if (currentProp.defaultPropValue)
+					{
+						newProto[currentProp.propName].defaultPropValue = currentProp.defaultPropValue
+					}
+					if (currentProp.required != null)
+					{
+						newProto[currentProp.propName].required = currentProp.required;
+					}
+					break;
+				default:
+					throw 'Invalid command ' + currentInputProp.command;
+					return;
+					break; 
+			}
+		}
+
+		var baseProps = Object.keys(baseProto)
+		for (iiBaseProp = 0; iiBaseProp < baseProps.length ; iiBaseProp++)
+		{
+			var currentBasePropString = baseProps[iiBaseProp]
+
+			var newProtoHasProp = newProto.hasOwnProperty(currentBasePropString)
+			var isPropSkipped = skipProps.hasOwnProperty(currentBasePropString)
+
+			if (newProtoHasProp == false && isPropSkipped == false)
+			{
+				newProto[currentBasePropString] = baseProto[currentBasePropString];
+			}
+
+		}
+
+		_gameObjectProtos[newTypeName] = newProto;
+		return newTypeName;
 	}
 
 	function DoesGameObjectTypeExist(inputObjType)
 	{
 		var response;
-		var cleanInputObjType = purifyString(inputObjType);
-		var objIndex = _gameObjectTypes.indexOf(cleanInputObjType)
-
-		try
+		var objTypeVar = _gameObjectProtos[inputObjType]
+		if (objTypeVar != null || objTypeVar != undefined)
 		{
-			if (objIndex < 0)
-			{
-				response.bool = false;
-			}
-			else
-			{
-				response.bool = true
-				response.returnIndex = objIndex;
-			}
+			response = true
 		}
-		catch(err)
+		else
 		{
-			throw err;
+			response = false;
 		}
 		return response;
 
 	}
-	/*This requires the same rules as creating it's type - typeName must be a separate property that's not in the props property, but the inputParams.prop[property name] key needs to be what you wanted
-	to set it to when you created the gameObject type.
+	/*
+		inputParams.typeName
+		inputParams.props = []
+		inputParams.props[0] = {
+			'propName': 'new proprety'
+			'propValue': 'prop value'
+		}
+
+	When creating a gameObject, it can be given a label which can either uniquley identify IT, or be able identify another group in the observer that is not a gameLibrary or gameObject.
 	*/
 	function CreateGameObject(inputParams)
 	{
@@ -148,53 +296,111 @@ var GameManager = function GameManager(){
 		{
 			var doesGameObjTypeExist = DoesGameObjectTypeExist(inputParams.typeName);
 
-			if (doesGameObjTypeExist.bool == true)
+			if (doesGameObjTypeExist == true) 
 			{
-				var newGameObject = function()
+				
+				function NewGameObject()
 				{
 					var props = {}
 					var that = this;
-					var typeName = inputParams.typeName;
+					var objectLabel = inputParams.objectLabel || null;
+					var _typeName = inputParams.typeName;
 
+					this.typeName = GetType();
+
+					this.receive = receive;
+
+					//var _gjGameObserver = null;
 					this.SetProperty = SetProperty;
 					this.GetProperty = GetProperty;
 					this.DoesPropExist = DoesPropExist;
 					this.GetType = GetType;
 					this.DeleteProperty = DeleteProp;
+					this.AddProperty = AddProp;
 
-					var inputParamsProps = Object.keys(inputParams.props)
+					this.GetAllProperties = GetAllProperties;
 
-					for (iiProp == 0; iiProp < inputParamsProps.length; iiProp++)
+					this.GetLabel = GetLabel;
+					this.SetLabel = SetLabel;
+
+					var inputParamsProps = inputParams.props			
+
+					var currentProto = _gameObjectProtos[inputParams.typeName]
+
+					for (iiProp = 0; iiProp < inputParamsProps.length; iiProp++)
 					{
-						var currentParamProp = inputParamsProps[iiProp];
-
-						var propExist = DoesPropExistInProto(currentParamProp, typeName)
-
+						var currentParamPropObj = inputParamsProps[iiProp];
+						var propExist = DoesPropExistInProto(currentParamPropObj.propName, inputParams.typeName)
 						if (propExist.bool == true)
 						{
-							var protoPropType = _gameObjectProtos[doesGameObjTypeExist.returnIndex][currentParamProp]
-							var currentPropType = typeof inputParams.props[currentParamProp]
+							
+							var protoPropType = currentProto[currentParamPropObj.propName].dataValue;
+							var currentPropType = typeof currentParamPropObj.propValue;
 
 							if (protoPropType == currentPropType)
 							{
-								props[currentParamProp] = inputParams.props[currentParamProp]
+								//props[currentParamPropObj.propName] = currentParamPropObj.propValue
+								AddProp(currentParamPropObj.propName, currentParamPropObj.propValue)
 							}
 							else
 							{
-								throw protoPropType + " and " + currentPropType + "are not equal types. And if they are, boy are you in for some digging... - Past Alex";
+								throw protoPropType + " and " + currentPropType + " are not equal types. And if they are, boy are you in for some digging... - Past Alex";
+								return;
 							}
 							
 						}
 						else
 						{
-							throw currentParamProp + " does not exist in GameObject Type " + typeName;
+							throw currentParamPropObj + " does not exist in GameObject Type " + inputParams.typeName;
+							return 
 						}
 
+					}
+					function MissingProps()
+					{
+						var returnArray = [];
+						var _propsInProto = Object.keys(currentProto)
+
+						for (iiProtoProp = 0; iiProtoProp < _propsInProto.length; iiProtoProp++)
+						{
+							var _currentProtoPropString = _propsInProto[iiProtoProp]
+							var _currentProtoProp = currentProto[_currentProtoPropString]
+
+							var _doesCurrentPropExistInInput = props.hasOwnProperty(_currentProtoPropString)
+
+							if (_doesCurrentPropExistInInput == false && _currentProtoProp.required == true && _currentProtoProp != 'typeName')
+							{
+								returnArray.push(_currentProtoPropString)
+							}
+						}
+
+						return returnArray;
+					}
+
+					var missingProps = MissingProps();
+
+					if (missingProps.length > 0)
+					{
+						throw "missing the following required properties: " + missingProps.toString();
+						return;
+					}
+
+
+					function SetLabel(inputLabelString)
+					{
+						objectLabel = inputLabelString
+					}
+
+					function GetLabel()
+					{
+						var response = objectLabel;
+						return response;
 					}
 
 					function SetProperty(inputProp, inputKeyValue)
 					{
 						var doesCurrentPropExist = DoesPropExist(inputProp)
+
 						if (doesCurrentPropExist.bool == true)
 						{
 							props[inputProp] = inputKeyValue;
@@ -208,25 +414,27 @@ var GameManager = function GameManager(){
 					function GetProperty(inputProp)
 					{
 						var doesCurrentPropExist = DoesPropExist(inputProp)
-						
+
 						var response;
+
 						if (doesCurrentPropExist.bool == true)
 						{
-							response.returnKey = props[inputProp];
+							response = props[inputProp];
 						}
 						else
 						{
 							throw "Property " + inputProp + " does not exist in object"
 						}
+
+						return response;
 					}
 					function DoesPropExist(inputPropString)
 					{
-						var currentProps = Object.keys(props)
+						var currentProps = Object.getOwnPropertyNames(props)
+
 						var propIndex = currentProps.indexOf(inputPropString)
 
-3
-
-						var response;
+						var response = {};
 
 						if (propIndex < 0)
 						{
@@ -243,8 +451,22 @@ var GameManager = function GameManager(){
 
 					function GetType()
 					{
-						var response = typeName;
+						var response = _typeName;
 						return response;
+					}
+
+					function AddProp (inputPropString, defaultKey)
+					{
+						var doesPropExist = DoesPropExist(inputPropString)
+
+						if (doesPropExist.bool == false)
+						{
+							props[inputPropString] = defaultKey;
+						}
+						else
+						{
+							throw inputPropString + " already exists in object " + that;
+						}
 					}
 
 					function DeleteProp(inputPropString)
@@ -261,17 +483,25 @@ var GameManager = function GameManager(){
 						}
 					}
 
-					function DoesPropExistInProto(inputPropString, objTypeString)
+					function GetAllProperties()
 					{
 						var response;
+						response = props;
+
+						return response;
+					}
+
+					function DoesPropExistInProto(inputPropString, objTypeString)
+					{
+						var response = {}
 
 						var cleaninputPropString = purifyString(inputPropString);
 						var cleanObjTypeString = purifyString(objTypeString);
 
-						var doesObjTypeExist = DoesGameObjectTypeExist(cleanObjTypeString)
-						if (doesObjTypeExist.bool == true)
+						var doesObjTypeExist = DoesGameObjectTypeExist(objTypeString)
+						if (doesObjTypeExist == true)
 						{
-							var objProto  = _gameObjectProtos[doesObjTypeExist.returnIndex]
+							var objProto  = _gameObjectProtos[objTypeString]
 							var objProtoProps = Object.keys(objProto)
 
 							var propIndex = objProtoProps.indexOf(inputPropString)
@@ -284,39 +514,163 @@ var GameManager = function GameManager(){
 							else
 							{
 								response.bool = true;
-								response.returnIndex = propIndex;
 							}
 						}
 						
 						return response;
 					}
 
+					function SetGameObserver(inputGameObserver)
+					{
+						if (!_gjGameObserver)
+						{
+							_gjGameObserver = inputGameObserver
+						}
+						else
+						{
+							throw "Game Observer already exists on GameObject"
+						}
+					}
+
+					function receive(message)
+					{
+						for (iiProperty = 0; iiProperty < message.length; iiProperty++)
+						{
+							var currentProperty = message[iiProperty];
+							var currentPropName = currentProperty.propertyName;
+
+							var currentValue = currentProperty.commandValue;
+							var currentCommand = currentProperty.command;
+							var currentPeer = currentProperty.peer;
+							if (!currentPeer || currentPeer != 'property' || currentPeer != 'value')
+							{
+								throw 'No peer'
+								return;
+							}
+							if (!currentPropName)
+							{
+								throw 'No propertyName'
+								return;
+							}
+							if (!currentValue)
+							{
+								throw 'No currentValue'
+								return;
+							}
+							if (!currentCommand)
+							{
+								throw 'No currentCommand'
+								return;
+							}
+							var doesInputPropExist = DoesPropExist(dooesInputPropExist)
+
+							switch (currentCommand)
+							{
+								case 'add':
+									switch (currentPeer)
+									{
+										case 'property':
+											if (doesInputPropExist == false)
+											{
+												props[currentPropName] = currentValue	
+											}
+											else
+											{
+												throw 'Property ' + currentPropName + ' already exists'
+												return;
+											}
+											break;
+										case 'value':
+											props[currentPropName] += currentValue;
+											break;
+										default:
+											throw 'Invalid command';
+											return;
+											break;
+
+									}
+									break;
+								case 'set':
+									switch (currentPeer)									
+									{
+										case 'property':
+											throw 'Why are you setting a non-protype\'s property dataType?';
+											return;	
+										case 'value':
+											that.SetProperty(props[currentPropName], currentValue)
+										default:
+											throw 'Peer is invalid.'
+									}
+									
+									break;
+								case 'execute':
+									if (currentPeer == 'property')
+									{
+										throw 'Cannot execute on a property.'
+										return;
+									}
+									else if (doesInputPropExist.bool == false)
+									{
+										throw 'Property does not exist'
+									}
+									else
+									{
+										var objProp = props[currentPropName]
+										objProp.apply(that, currentValue)
+									}
+									break;
+								case 'remove':
+									if (currentPeer != 'property')
+									{
+										throw 'Can only remove a property. If you\'re setting a value, then set peer to \'value\' '
+										return;
+									}
+									else
+									{
+										DeleteProp(currentPropName)
+									}
+									break;
+								default:
+									throw 'Invalid command ' + currentCommand;
+									return;
+									break;
+							}
+						}
+					}
+					return this;
 				}
-				newGameObject.prototype.SetProperty = (inputProp, inputKeyValue)
+				var newGameObject = new NewGameObject();
+				
+				NewGameObject.prototype.SetProperty = function(inputProp, inputKeyValue)
 				{
 					this.SetProperty(inputProp, inputKeyValue);
 				}
-				newGameObject.prototype.GetProperty = (inputProp)
+				NewGameObject.prototype.GetProperty = function(inputProp)
 				{
 					var response = this.GetProperty(inputProp);
 					return response;
 				}
-				newGameObject.prototype.DoesPropExist = (inputPropString)
+				NewGameObject.prototype.DoesPropExist = function(inputPropString)
 				{
 					var response = this.DoesPropExist(inputPropString);
 					return respsonse;
 				}
-				newGameObject.prototype.GetType = ()
+				NewGameObject.prototype.GetType = function()
 				{
 					var response = this.GetType();
 					return response;
 				}
-				newGameObject.prototype.DeleteProperty = (inputPropString)
+				NewGameObject.prototype.DeleteProperty = function(inputPropString)
 				{
-					var response = this.DoesPropExist(inputPropString);
+					var response = this.DeleteProp(inputPropString);
 					return response;
 				}
-
+				NewGameObject.prototype.GetAllProperties = function()
+				{
+					var response = this.GetAllProperties();
+					return response;
+				}
+				
 
 				returnObj = newGameObject;
 
@@ -327,48 +681,48 @@ var GameManager = function GameManager(){
 		
 	}
 
-	function RemoveGameObjectType = function (objTypeString)
+	function RemoveGameObjectType(objTypeString)
 	{
 		var cleanInputTypeString = objTypeString
 		var doesObjExist = DoesGameObjectTypeExist(objTypeString)
 
-		if (doesObjExist.bool == true)
+		if (doesObjExist == true)
 		{
-			_gameObjectProtos[doesObjExist.returnIndex] = null;
-			_gameObjectTypes[doesObjTypeExist.returnIndex] = null;
-			_gameEmptyIndex.push(doesObjTypeExist.returnIndex)
-
+			_gameObjectProtos[objTypeString] = null;
 		}
 		else
 		{
 			throw objTypeString + 'does not exist'
+			return;
 		}
 	}
-	/* Since you're going to be "setting" the object's type, inputParams for it's type require it's current typeName (in inputParams.typeName) and the properties you wish to add or remove from it in a similar
-	fashion to how the objectType is added. The only real difference is that you have a new property called "command" that must be included that is either "add" or "remove", along with the propertyName as a property itself
-	and it's type. This will decide whether or not the property will attempted to be added or removed.
-
-	If you want to simply rename the game object type, just include the new name in the type name, then include a null property array.
+	/*
+		inputParams.typeName = 'gameObject type name as listed in _gameObjectProtos'
+		inputParams.props = [] <-- array for objects which contain:
+			inputParams.props[0] = {
+				'propName':'name of property on gameObject',
+				'command': operation you want to perform ('add','set', or 'remove')
+				'commandValue': the value type you'll be setting the property to (can be left undefined or null for 'remove' command)
+				'defaultPropValue': the value that will be set for all objects, otherwise they will be set to 'null'
+				'required': a boolean that indicates whether or not the property is required for gameObjects created from this proto
+			}
 	*/
-	function SetGameObjectType = function(inputParams)
+	function SetGameObjectType(inputParams)
 	{
-		var cleanInputTypeString = inputParams.typeName;
-		var doesObjExist = DoesGameObjectTypeExist(cleanInputTypeString)
+		var doesObjExist = DoesGameObjectTypeExist(inputParams.typName)
 
 		var currentObjProto;
 
-		if (doesObjExist.bool == true)
+		if (doesObjExist == true)
 		{
-
-			currentObjProto = _gameObjectProtos[doesObjExist.returnIndex]
-
 			if(!inputParams.typeName)
 			{
 				throw 'inputParams.typeName required'
 			}
-
 			else
 			{
+				currentObjProto = _gameObjectProtos[inputParams.typeName]
+
 				for (ii = 0; ii < inputParams.props.length; ii++)
 				{
 					var inputObjProp = inputParams.props[ii];
@@ -382,36 +736,49 @@ var GameManager = function GameManager(){
 					}
 					switch (pureCommand)
 					{
-						case 'add':
 						case 'set':
-							if (inputObjProp.require == true)
-							{	
+							var protoPropStrings = Object.keys(currentObjProto)
+							var inputPropIndex = protoPropStrings.indexOf(inputParams.propName)
+							if (inputPropIndex < 0 )
+							{
+								throw "Property does not exist to use 'set' command on. = " + inputParams.propName
+								return;
+								break;
+							}
+						case 'add':
+							if (inputObjProp.required == true)
+							{
+								currentObjProto[inputObjProp.propName].required = true;
 
-								var objProp = GetPropFromObj_SetGameObjType(inputObjProp)
-
-								objProp.require = true;
-
-								var objKey = inputObjProp[objProp]
-								currentObjProto[objProp] = objKey;
+							}
+							else if (inputObjProp.required == false)
+							{
+								currentObjProto[inputObjProp.propName].required = false;
 							}
 							else
 							{
-								var objProp = GetPropFromObj_SetGameObjType(inputObjProp)
-
-								objProp.require = false;
-
-								var objKey = inputObjProp[objProp]
-								currentObjProto[objProp] = objKey;
+								throw "Invalid Require property on input Object = " + inputObjProp.required;
+								return;
+								break;
 							}
-							break;
 
+							var objKey = inputObjProp.commandValue;
+							currentObjProto[inputObjProp.propName].dataValue = objKey;
+
+							if (inputObjProp.defaultPropValue)
+							{
+								currentObjProto[inputObjProp.propName].defaultPropValue = inputObjProp.defaultPropValue;	
+							}
+							else
+							{
+								currentObjProto[inputObjProp.propName].defaultPropValue = null;
+							}			
+							break;
 						case 'remove':
-							delete currentObjProto[objProp]
+							delete currentObjProto[inputObjProp.propName];
 							break;
 					}
 				}
-
-
 				
 			}
 
@@ -424,40 +791,51 @@ var GameManager = function GameManager(){
 		return currentObjProto;
 	}
 
-	function GetPropFromObj_SetGameObjType(objProp)
+	function CloneGameObject(inputGameObject, optGameLabel)
 	{
-		var inputProps = Object.keys(objProp)
-		var requireIndex = inputProps.indexOf('require')
-		var commandIndex = inputProps.indexOf('command')
-		
-		var numOne = commandIndex + requireIndex
-		var currentPropNum;
+		var objProps = inputGameObject.GetAllProperties();
+		var objPropStrings = Object.keys(objProps)
 
-		switch(numOne)
+		var newObjLabel;
+		var newObjProps = []
+
+		for (iiProp = 0; iiProp < objPropStrings.length; iiProp++)
 		{
-			case 1:
-				currentPropNum = 2
-				break;
-			case 2:
-				currentPropNum = 1
-				break;
-			case 3:
-				currentPropNum = 0
-				break;
+			newObjProps[iiProp] = {
+				'propName': objPropStrings[iiProp],
+				'propValue': objProps[objPropStrings[iiProp]]
+			}
 		}
 
-		var currentProp = inputProps[currentPropNum]
+		if (optGameLabel)
+		{
+			newObjLabel = optGameLabel;
+		}
+		else
+		{
+			newObjLabel = inputGameObject.GetLabel();
+		}
 
-		return currentProp;
+		var newGameObject_params = {
+			'typeName': inputGameObject.typeName,
+			'objectLabel': newObjLabel,
+			'props': newObjProps
+		}
+
+		var returnNewGameObject = CreateGameObject(newGameObject_params)
+
+		return returnNewGameObject;
 	}
 
 	function CheckObjIntegrity_SetGameObjType(inputObj)
 	{
 		var inputObjProp_reqFields = Object.keys(inputObj)
 		var reqFields = inputObjProp_reqFields.length;
-		var requireIndex = inputObjProp_reqFields('require')
+		var requireIndex = inputObjProp_reqFields('required')
 		var commandIndex = inputObjProp_reqFields('command')
-		var requireFieldType = typeof inputObjProp_reqFields[requireIndex]
+		var valueTypeIndex = inputObjProp_reqFields('valueType')
+
+		var _setThisValueForMaxPropsOnObject = 4
 
 		var pureCommand = purifyString(inputObjProp_reqFields[commandIndex])
 
@@ -469,23 +847,19 @@ var GameManager = function GameManager(){
 		}
 		else if (requireIndex < 0)
 		{
-			throw "Error: require is required as a property"
+			throw "Error: required is required as a property"
 		}
-		else if (reqFields > 3)
+		else if (reqFields > _setThisValueForMaxPropsOnObject)
 		{
 			throw "Error: Too many properties on object. Separate properties into objects in the props Array."
 		}
-		else if (reqFields < 3)
+		else if (reqFields < _setThisValueForMaxPropsOnObject)
 		{
 			throw "Error: Missing property"
 		}
 		if (pureCommand != 'add' || pureCommand != 'remove' || pureCommand != 'set' )
 		{
 			throw "command property must be either 'add' or 'remove'"
-		}
-		else if (requireFieldType != 'boolean')
-		{
-			throw "require property must be a boolean"
 		}
 		else
 		{
@@ -498,7 +872,9 @@ var GameManager = function GameManager(){
 	function GetGameObjectTypes()
 	{
 		var response;
-		if (_gameObjectTypes > 0 )
+
+		var objTypes = Object.keys(_gameObjectProtos)
+		if (objTypes.length > 0 )
 		{
 			response = _gameObjectTypes;
 		}
@@ -514,7 +890,9 @@ var GameManager = function GameManager(){
 	function GetGameObjectProtos()
 	{
 		var response;
-		if (_gameObjectProtos > 0 )
+		var objTypes = Object.keys(_gameObjectProtos)
+
+		if (objTypes.length > 0 )
 		{
 			response = _gameObjectProtos;
 		}
@@ -523,6 +901,33 @@ var GameManager = function GameManager(){
 			response = null;
 		}
 		return response;
+	}
+
+	function IsGameManagerValid(inputCheckString)
+	{
+		var response;
+		if (inputCheckString != _myOwnDamneGameManager)
+		{
+			response = false;
+		}
+		else
+		{
+			response = true;
+		}
+
+		return response;
+	}
+
+	function SetGameObserver(gameObserver)
+	{
+		if (!_gameObserver)
+		{
+			_gameObserver = gameObserver
+		}
+		else
+		{
+			throw "GameObserver has already been set"
+		}
 	}
 
 }
@@ -545,8 +950,26 @@ GameManager.prototype.GetGameObjectTypes = function ()
 	var response = this.GetGameObjectTypes();
 	return response;
 }
-
+GameManager.prototype.GetGameObjectProtos = function()
+{
+	var response = this.GetGameObjectProtos()
+	return response;
 }
+GameManager.prototype.IsGameManagerValid = function(inputCheckString)
+{
+	var response = this.IsGameManagerValid(inputCheckString)
+	return response;
+}
+GameManager.prototype.SetGameObserver = function(gameObserver)
+{
+	this.SetGameObserver(gameObserver)
+}
+GameManager.prototype.CloneGameObject = function(inputGameObject, optGameLabel)
+{
+	var response = this.CloneGameObject(inputGameObject, optGameLabel)
+	return response;
+}
+
 
 function purifyString(inputString)
 {
