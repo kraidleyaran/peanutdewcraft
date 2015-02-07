@@ -194,7 +194,7 @@ function GameLibrary()
 				'objectLib': [],
 				'emptyIndex':[],
 				'objList': {},
-				'objLabelList' = {},
+				'objLabelList' : {},
 				'libName': libTypeString
 			}
 

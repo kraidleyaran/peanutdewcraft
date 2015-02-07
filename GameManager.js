@@ -9,6 +9,8 @@ function GameManager(){
 
 	var _gameObserver = null;
 
+	var theGameManager = this;
+
 	this.SetGameObserver = SetGameObserver;
 
 	var _myOwnDamneGameManager = "This is a random string I put in here that forces you to copy / change this in the understanding you are purposely using your own GameManager instead of mine. Good luck with that."
@@ -28,7 +30,14 @@ function GameManager(){
 
 	this.CloneGameObject = CloneGameObject;
 
+	this.DoesGameObjectTypeExist = DoesGameObjectTypeExist;
+
 	var _objTypes = ['string','number','boolean','array','object','function']
+
+	this.GetValidDataTypes = function ()
+	{
+		return _objTypes;
+	}
 
 	function IsAllowedType(inputTypeString) 
 	{
@@ -104,6 +113,12 @@ function GameManager(){
 			{
 				var currentInputProp = objParamsProps[iiProp]
 				var currentObjPropString = currentInputProp.propName
+				var _currentPropExist = returnObj.hasOwnProperty(currentObjPropString)
+				if (_currentPropExist == true)
+				{
+					throw "Property " + currentObjPropString + " already exists in prototype. Check input object for same property names."
+					return;
+				}
 				var cleanObjPropName = purifyString(currentObjPropString);
 				// the following is done so in order to prevent any sort of property naming shenanigans do not include the typeName. I throw you the warning letting you know you're a dumbass and to try again
 				if (cleanObjPropName == cleanTypeNameString)
@@ -307,6 +322,8 @@ function GameManager(){
 					var _typeName = inputParams.typeName;
 					var _currentLib = null
 
+					var _gameManager = theGameManager;
+
 					this.currentLib = GetLibrary();
 					this.SetLibrary = SetLibrary;
 
@@ -339,8 +356,9 @@ function GameManager(){
 					for (iiProp = 0; iiProp < inputParamsProps.length; iiProp++)
 					{
 						var currentParamPropObj = inputParamsProps[iiProp];
-						var propExist = DoesPropExistInProto(currentParamPropObj.propName, inputParams.typeName)
-						if (propExist.bool == true)
+						var propExistInProto = DoesPropExistInProto(currentParamPropObj.propName, inputParams.typeName)
+						var propExistInProps = DoesPropExist(currentParamPropObj.propName)
+						if (propExistInProto == true && propExistInProps == false)
 						{
 							
 							var protoPropType = currentProto[currentParamPropObj.propName].dataValue;
@@ -353,15 +371,20 @@ function GameManager(){
 							}
 							else
 							{
-								throw protoPropType + " and " + currentPropType + " are not equal types. And if they are, boy are you in for some digging... - Past Alex";
+								throw protoPropType + " and " + currentPropType + " are not equal types.";
 								return;
 							}
 							
 						}
-						else
+						else if (propExistInProto == false)
 						{
-							throw currentParamPropObj + " does not exist in GameObject Type " + inputParams.typeName;
+							throw currentParamPropObj.propName + " does not exist in GameObject Type " + inputParams.typeName;
 							return 
+						}
+						else if (propExistInProps == true)
+						{
+							throw currentParamPropObj.propName + " already exists in input gameObject. Check property names and try again."
+							return;
 						}
 
 					}
@@ -387,10 +410,12 @@ function GameManager(){
 					}
 
 					var missingProps = MissingProps();
-
+					
 					if (missingProps.length > 0)
 					{
-						throw "missing the following required properties: " + missingProps.toString();
+						var missingPropsString = missingProps.toString();
+						throw "missing the following required properties: " + missingPropsString;
+						returnObj = missingPropsString;
 						return;
 					}
 
@@ -410,7 +435,7 @@ function GameManager(){
 					{
 						var doesCurrentPropExist = DoesPropExist(inputProp)
 
-						if (doesCurrentPropExist.bool == true)
+						if (doesCurrentPropExist == true)
 						{
 							props[inputProp] = inputKeyValue;
 						}
@@ -426,7 +451,7 @@ function GameManager(){
 
 						var response;
 
-						if (doesCurrentPropExist.bool == true)
+						if (doesCurrentPropExist == true)
 						{
 							response = props[inputProp];
 						}
@@ -450,7 +475,16 @@ function GameManager(){
 					}
 					function SetType(newTypeNameString)
 					{
-						_typeName = newTypeNameString
+						var typeNameExist = _gameManager.DoesGameObjectTypeExist(newTypeNameString)
+						if (typeNameExist == true)
+						{
+							_typeName = newTypeNameString	
+						}
+						else
+						{
+							throw "typeName " + newTypeNameString + " is not an exisiting gameObject prototype typeName."
+							return;
+						}
 					}
 					function GetLibrary()
 					{
@@ -467,7 +501,7 @@ function GameManager(){
 					{
 						var doesPropExist = DoesPropExist(inputPropString)
 
-						if (doesPropExist.bool == false)
+						if (doesPropExist == false)
 						{
 							props[inputPropString] = defaultKey;
 						}
@@ -481,7 +515,7 @@ function GameManager(){
 					{
 						var doesPropExist = DoesPropExist(inputPropString)
 
-						if (doesPropExist.bool == true)
+						if (doesPropExist == true)
 						{
 							delete props[inputPropString]
 						}
@@ -517,12 +551,12 @@ function GameManager(){
 
 							if (propIndex < 0)
 							{
-								response.bool = false;
+								response = false;
 
 							}
 							else
 							{
-								response.bool = true;
+								response = true;
 							}
 						}
 						
@@ -711,6 +745,10 @@ function GameManager(){
 
 				returnObj = newGameObject;
 
+			}
+			else
+			{
+				throw "gameObject type " + inputParams.typeName + " does not exist in prototype list " + _gameObjectTypes
 			}
 		}
 
@@ -938,7 +976,7 @@ function GameManager(){
 		var objTypes = Object.keys(_gameObjectProtos)
 		if (objTypes.length > 0 )
 		{
-			response = _gameObjectTypes;
+			response = objTypes;
 		}
 		else
 		{
@@ -1019,21 +1057,21 @@ GameManager.prototype.GetGameObjectTypes = function ()
 }
 GameManager.prototype.GetGameObjectProtos = function()
 {
-	var response = this.GetGameObjectProtos()
+	var response = this.GetGameObjectProtos();
 	return response;
 }
 GameManager.prototype.IsGameManagerValid = function(inputCheckString)
 {
-	var response = this.IsGameManagerValid(inputCheckString)
+	var response = this.IsGameManagerValid(inputCheckString);
 	return response;
 }
 GameManager.prototype.SetGameObserver = function(gameObserver)
 {
-	this.SetGameObserver(gameObserver)
+	this.SetGameObserver(gameObserver);
 }
-GameManager.prototype.CloneGameObject = function(inputGameObject, options.objectLabel)
+GameManager.prototype.CloneGameObject = function(inputGameObject, options)
 {
-	var response = this.CloneGameObject(inputGameObject, options.objectLabel)
+	var response = this.CloneGameObject(inputGameObject, options)
 	return response;
 }
 
