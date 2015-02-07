@@ -136,9 +136,7 @@ function GameLibrary()
 			var currentObj = currentLib[objectId]
 			if (currentObj || currentObj != null)
 			{
-				var removedOjbectId = currentLib.splice(1, objectId)
-				currentLib.emptyIndex.push(objectId);
-				currentLib.objList[currentObj.typeName] -= 1
+				currentLib.RemoveFromLibray(objectId)
 			}
 			else
 			{
@@ -196,10 +194,11 @@ function GameLibrary()
 				'objectLib': [],
 				'emptyIndex':[],
 				'objList': {},
+				'objLabelList' = {},
 				'libName': libTypeString
 			}
 
-			newCustomLib.DoesObjectTypeExistInLibrary = function (inputObjectTypeName)
+			newCustomLib.DoesObjectTypeExistInLibrary = function(inputObjectTypeName)
 			{
 				var _response = {};
 
@@ -216,7 +215,7 @@ function GameLibrary()
 
 				return _response;
 			}
-			newCustomLib.AddToLibrary = function (inputObject)
+			newCustomLib.AddToLibrary = function(inputObject)
 			{
 				var _doesObjExist = DoesObjectExistInLibrary(this.libName, inputObject);
 				var response = {};
@@ -225,16 +224,34 @@ function GameLibrary()
 					var newObjectId = assignId(this.libName)
 					response.libId = newObjectId;
 					response.libName = this.libName;
+
 					this.objectLib[newObjectId] = inputObject;
 
 					var _doesObjTypeExistInLib = this.DoesObjectTypeExistInLibrary(inputObject.typeName)
-					if (_doesObjTypeExistInLib == true)
+					if (_doesObjTypeExistInLib == false)
 					{
-						this.objList[inputObject.typeName] += 1
+						this.objList[inputObject.typeName] = [] 
+						this.objList[inputObject.typeName].push(newObjectId)
 					}
 					else
 					{
-						this.objList[inputObject.typeName] = 1
+						this.objList[inputObject.typeName].push(newObjectId)
+					}
+					var inputObjectLabel = inputObject.GetLabel();
+					if (inputObjectLabel != null)
+					{
+						var currentObjLabels = Object.keys(objLabelList)
+						var objLabelIndex = currentObjLabels.indexOf(inputObjectLabel)
+
+						if (objLabelIndex < 0)
+						{
+							this.objLabelList[inputObjectLabel].push(newObjectId)
+						}
+						else
+						{
+							this.objLabelList[inputObjectLabel] = []
+							this.objLabelList[inputObjectLabel].push(newObjectId)
+						}
 					}
 				}
 				else
@@ -243,6 +260,41 @@ function GameLibrary()
 				}
 
 				return response;
+			}
+			newCustomLib.RemoveFromLibrary = function (inputObjectId)
+			{	
+				var currentObject = this.objectLib[inputObjectId];
+				var objLabel = currentObject.GetLabel()
+				if (!currentObject)
+				{
+					throw currentObject + " does not exist at Id " + inputObjectId + " in library " + this;
+				}
+				else
+				{
+					this.objectLib[inputObjectId] = null;
+
+					this.emptyIndex.push(inputObjectId)
+
+					this.objList[currentObject.typeName] -= 1
+
+					if (this.objList[currentObject.typename] <= 0)
+					{
+						delete this.objList[currentObject.typeName]
+					}
+
+					if (objLabel != null)
+					{
+						var objLabelIndex = this.objLabelList[objLabel].indexOf(objLabel)
+						this.objLabelList[objLabel].splice(objLabelIndex, 1)
+
+						if (this.objLabelList[objLabel].length <= 0)
+						{
+							delete this.objLabelList[objLabel]
+						}
+					}
+
+				}
+				return currentObject;
 			}
 
 			customLibs[libTypeString] = newCustomLib;

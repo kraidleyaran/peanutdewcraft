@@ -4,7 +4,7 @@ var mainGame = (function () {
 	}
 
 	TurbulenzEngine = WebGLTurbulenzEngine.create({
-						canvas: document.getElementById("mainCanvas")
+		canvas: document.getElementById("mainCanvas")
 	});
 
 	TurbulenzEngine.onerror = function gameErrorFn (msg)
@@ -67,8 +67,10 @@ var mainGame = (function () {
 	console.log(newGamePieceObject.GetProperty('positionY'))
 
 	var testGamePiece_libName = MyGameLibrary.AddLibraryType('TestGamePiece');
+	console.log(testGamePiece_libName)
 
 	var newGamePiece_Id = MyGameLibrary.AddToLibrary(testGamePiece_libName, newGamePieceObject);
+	console.log(newGamePiece_Id)
 	
 	var player_HealthProp = {
 		'propName': 'positionx',
@@ -77,6 +79,13 @@ var mainGame = (function () {
 		'defaultPropValue': 0,
 		'command': 'add'
 	}
+	var gameLibs = MyGameLibrary.GetLibraries();
+
+	var currentGameLib = gameLibs[testGamePiece_libName]
+	console.log(currentGameLib.objectLib[0])
+	currentGameLib.RemoveFromLibrary(newGamePiece_Id.libId);
+	console.log(currentGameLib.objectLib[0])
+	
 	var playerGamePiece_Proto = {
 		'typeName': 'playerGamePiece',
 		'props': [player_HealthProp]
@@ -86,9 +95,9 @@ var mainGame = (function () {
 
 
 	var evenNewerTestGamePieceObject_InColor = MyGameManager.CloneGameObject(newGamePieceObject, 'In Color')
-
-	console.log(evenNewerTestGamePieceObject_InColor.GetAllProperties(), newGamePieceObject.GetAllProperties())
-	console.log(evenNewerTestGamePieceObject_InColor.GetLabel(), newGamePieceObject.GetLabel())
+	console.log(newGamePieceObject)
+	console.log(evenNewerTestGamePieceObject_InColor)
+	//console.log(evenNewerTestGamePieceObject_InColor.GetLabel(), newGamePieceObject.GetLabel())
 
 
 	

@@ -305,8 +305,14 @@ function GameManager(){
 					var that = this;
 					var objectLabel = inputParams.objectLabel || null;
 					var _typeName = inputParams.typeName;
+					var _currentLib = null
+
+					this.currentLib = GetLibrary();
+					this.SetLibrary = SetLibrary;
 
 					this.typeName = GetType();
+					this.SetType = SetType;
+
 
 					this.receive = receive;
 
@@ -326,6 +332,9 @@ function GameManager(){
 					var inputParamsProps = inputParams.props			
 
 					var currentProto = _gameObjectProtos[inputParams.typeName]
+
+					this.objectProto = GetObjectProto();
+					this.SetObjectProto = SetObjectProto;
 
 					for (iiProp = 0; iiProp < inputParamsProps.length; iiProp++)
 					{
@@ -430,22 +439,7 @@ function GameManager(){
 					}
 					function DoesPropExist(inputPropString)
 					{
-						var currentProps = Object.getOwnPropertyNames(props)
-
-						var propIndex = currentProps.indexOf(inputPropString)
-
-						var response = {};
-
-						if (propIndex < 0)
-						{
-							response.bool = false;
-						}
-						else
-						{
-							response.bool = true;
-							response.returnIndex = propIndex;
-						}
-
+						var response = props.hasOwnProperty(inputPropString)
 						return response;
 					}
 
@@ -453,6 +447,20 @@ function GameManager(){
 					{
 						var response = _typeName;
 						return response;
+					}
+					function SetType(newTypeNameString)
+					{
+						_typeName = newTypeNameString
+					}
+					function GetLibrary()
+					{
+						var response = _currentLib;
+						return response;
+					}
+
+					function SetLibrary(libNameString)
+					{
+						_currnetLib = libNameString
 					}
 
 					function AddProp (inputPropString, defaultKey)
@@ -485,11 +493,12 @@ function GameManager(){
 
 					function GetAllProperties()
 					{
-						var response;
-						response = props;
+						var __response;
+						__response = props;
 
-						return response;
+						return __response;
 					}
+
 
 					function DoesPropExistInProto(inputPropString, objTypeString)
 					{
@@ -532,6 +541,26 @@ function GameManager(){
 						}
 					}
 
+					function GetObjectProto()
+					{
+						return currentProto;
+					}
+
+					function SetObjectProto(newObjectProto)
+					{
+						if(!newObjectProto)
+						{
+							throw "Invalid Input Object proto"
+							return;
+						}
+						currentProto = newObjectProto;
+					}
+					/*
+							message.commandValue
+							message.command
+							message.peer
+							message.propertyName;
+					*/
 					function receive(message)
 					{
 						for (iiProperty = 0; iiProperty < message.length; iiProperty++)
@@ -562,7 +591,7 @@ function GameManager(){
 								throw 'No currentCommand'
 								return;
 							}
-							var doesInputPropExist = DoesPropExist(dooesInputPropExist)
+							var doesInputPropExist = DoesPropExist(currentPropName)
 
 							switch (currentCommand)
 							{
@@ -581,13 +610,15 @@ function GameManager(){
 											}
 											break;
 										case 'value':
-											props[currentPropName] += currentValue;
+											if (doesInputPropExist == true)
+											{
+												props[currentPropName] += currentValue;	
+											}
 											break;
 										default:
 											throw 'Invalid command';
 											return;
 											break;
-
 									}
 									break;
 								case 'set':
@@ -597,7 +628,11 @@ function GameManager(){
 											throw 'Why are you setting a non-protype\'s property dataType?';
 											return;	
 										case 'value':
-											that.SetProperty(props[currentPropName], currentValue)
+											if (doesInputPropExist == true)
+											{
+												that.SetProperty(props[currentPropName], currentValue)	
+											}
+											break;
 										default:
 											throw 'Peer is invalid.'
 									}
@@ -609,11 +644,13 @@ function GameManager(){
 										throw 'Cannot execute on a property.'
 										return;
 									}
+									/*
 									else if (doesInputPropExist.bool == false)
 									{
 										throw 'Property does not exist'
 									}
-									else
+									*/
+									else if (doesInputPropExist == true)
 									{
 										var objProp = props[currentPropName]
 										objProp.apply(that, currentValue)
@@ -625,7 +662,7 @@ function GameManager(){
 										throw 'Can only remove a property. If you\'re setting a value, then set peer to \'value\' '
 										return;
 									}
-									else
+									else if(doesInputPropExist == true)
 									{
 										DeleteProp(currentPropName)
 									}
@@ -791,40 +828,65 @@ function GameManager(){
 		return currentObjProto;
 	}
 
-	function CloneGameObject(inputGameObject, optGameLabel)
+	/*
+		options object has the following properties:
+
+		var optionObject = {
+			objectLabels = []
+			howMany = 1
+		}
+
+		objectLabels is an array of strings containing object label names. As you can see, if a label is not provided, it uses the label of the object that is being cloned
+
+		howMany is a number indicating how many objects you want. It must be at least 1 or else nothing will be returned.
+
+		CloneGameObject returns an array filled with the new cloned objects.
+	*/
+
+	function CloneGameObject(inputGameObject, options)
 	{
 		var objProps = inputGameObject.GetAllProperties();
 		var objPropStrings = Object.keys(objProps)
 
-		var newObjLabel;
-		var newObjProps = []
+		var returnArray = [];
 
-		for (iiProp = 0; iiProp < objPropStrings.length; iiProp++)
+		for (iiObject = 0; iiObject >= options.howMany; iiObject++)
 		{
-			newObjProps[iiProp] = {
-				'propName': objPropStrings[iiProp],
-				'propValue': objProps[objPropStrings[iiProp]]
+			var newObjLabel;
+			var newObjProps = []
+
+			for (iiProp = 0; iiProp < objPropStrings.length; iiProp++)
+			{
+				newObjProps[iiProp] = {
+					'propName': objPropStrings[iiProp],
+					'propValue': objProps[objPropStrings[iiProp]]
+				}
 			}
+
+			if (options.objectLabels[iiObject])
+			{
+				newObjLabel = options.objectLabels[iiObject];
+			}
+			else
+			{
+				newObjLabel = inputGameObject.GetLabel();
+			}
+
+			var newGameObject_params = {
+				'typeName': inputGameObject.typeName,
+				'objectLabel': newObjLabel,
+				'props': newObjProps
+			}
+			console.log(newGameObject_params)
+			var returnNewGameObject = CreateGameObject(newGameObject_params)
+
+			
+			returnArray[iiObject] = returnNewGameObject
+
 		}
 
-		if (optGameLabel)
-		{
-			newObjLabel = optGameLabel;
-		}
-		else
-		{
-			newObjLabel = inputGameObject.GetLabel();
-		}
 
-		var newGameObject_params = {
-			'typeName': inputGameObject.typeName,
-			'objectLabel': newObjLabel,
-			'props': newObjProps
-		}
-
-		var returnNewGameObject = CreateGameObject(newGameObject_params)
-
-		return returnNewGameObject;
+		return returnArray;
 	}
 
 	function CheckObjIntegrity_SetGameObjType(inputObj)
@@ -930,6 +992,11 @@ function GameManager(){
 		}
 	}
 
+	function receive(message)
+	{
+
+	}
+
 }
 
 
@@ -964,9 +1031,9 @@ GameManager.prototype.SetGameObserver = function(gameObserver)
 {
 	this.SetGameObserver(gameObserver)
 }
-GameManager.prototype.CloneGameObject = function(inputGameObject, optGameLabel)
+GameManager.prototype.CloneGameObject = function(inputGameObject, options.objectLabel)
 {
-	var response = this.CloneGameObject(inputGameObject, optGameLabel)
+	var response = this.CloneGameObject(inputGameObject, options.objectLabel)
 	return response;
 }
 
