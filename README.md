@@ -59,3 +59,6 @@ GameManager.CreateGameObjectType(objParams)
 GameLibrary adds and removes objects from various libraries. You can add, get, or remove a library type and/or it's objects.
 
   GameLibrary.AddObjectToLibrary()
+
+
+Here's my change - Michael
