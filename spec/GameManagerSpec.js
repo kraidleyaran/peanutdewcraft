@@ -152,7 +152,144 @@ describe("GameManager", function() {
 
 		expect(_testCreateGameObjectType_WithTypeNameProp).toThrow("Cannot name property typeName (regardless of capitalization or trickery). Make sure if you're setting the type name in the params.props variable to set it in params.typeName")
 	})
+	it("Given an exisiting object, one new gameObject like the original gamObject should be able to be created by using GameManager.CloneGameObject(originalGameObject)", function(){
 
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newProtoString = MyGameManager.CreateGameObjectType(gamePieceProto);
+
+		var newGamePiece_prop_test = {
+				'propName': 'test',
+				'propValue': true
+			}
+	
+		var newGamePiece = 	{
+			'typeName': 'gamePiece',
+			'objectLabel':'',
+			'props':[newGamePiece_prop_test]
+		}
+		var newGamePiece_Object = MyGameManager.CreateGameObject(newGamePiece)	
+
+		var clonedGamePieceObject_array = MyGameManager.CloneGameObject(newGamePiece_Object)
+
+		var clonedGamePiece_one = clonedGamePieceObject_array[0]
+
+		var clonedGamePieceOne_type = typeof clonedGamePiece_one
+
+		expect(clonedGamePiece_one).not.toBe(newGamePiece_Object)
+		expect(clonedGamePieceOne_type).toBe('object')
+
+	})
+	it("Given an exisiting object, many new gameObjects exactly like the original gameObject should be able to be created by using GameManager.CloneGameObject(originalGameObject)", function(){
+
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newProtoString = MyGameManager.CreateGameObjectType(gamePieceProto);
+
+		var newGamePiece_prop_test = {
+				'propName': 'test',
+				'propValue': true
+			}
+	
+		var newGamePiece = 	{
+			'typeName': 'gamePiece',
+			'objectLabel':'',
+			'props':[newGamePiece_prop_test]
+		}
+		var newGamePiece_Object = MyGameManager.CreateGameObject(newGamePiece)
+
+		var gamePieceAmount = 100;
+
+		var gamePieceCloneOptions = {
+			'howMany': gamePieceAmount,
+		}	
+
+		var clonedGamePieceObject_array = MyGameManager.CloneGameObject(newGamePiece_Object, gamePieceCloneOptions)
+
+		var checkedCloneObjs = [];
+
+		for (iiClonedObj = 0; iiClonedObj < clonedGamePieceObject_array.length; iiClonedObj++)
+		{
+			var currentClonedObj = clonedGamePieceObject_array[iiClonedObj];
+
+			var currentClonedObjType = typeof currentClonedObj
+			
+			expect(currentClonedObj).not.toBe(newGamePiece_Object)
+			expect(currentClonedObjType).toBe('object')
+			var currentClonedObj_index = checkedCloneObjs.indexOf(currentClonedObj);
+
+			expect(currentClonedObj_index).toBeLessThan(0)
+
+			checkedCloneObjs.push(currentClonedObj);
+		}	
+
+	})
+	it("When creating multiple objects with GameManager.CloneGameObject, including labels is optional for each object.", function(){
+
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newProtoString = MyGameManager.CreateGameObjectType(gamePieceProto);
+
+		var newGamePiece_prop_test = {
+				'propName': 'test',
+				'propValue': true
+			}
+	
+		var newGamePiece = 	{
+			'typeName': 'gamePiece',
+			'objectLabel':'',
+			'props':[newGamePiece_prop_test]
+		}
+		var newGamePiece_Object = MyGameManager.CreateGameObject(newGamePiece)
+
+		var gamePieceAmount = 100;
+
+		var labelPieceAmount = 75;
+
+		var objectLabel_array = []
+
+		for (iiLabel = 0; iiLabel < labelPieceAmount; iiLabel++)
+		{
+			var newLabelString = 'newLabel';
+			newLabelString += iiLabel;
+			objectLabel_array.push(newLabelString)
+		}
+
+		var gamePieceCloneOptions = {
+			'howMany': gamePieceAmount,
+			'objectLabels':objectLabel_array
+		}	
+
+		var clonedGamePieceObject_array = MyGameManager.CloneGameObject(newGamePiece_Object, gamePieceCloneOptions)
+
+		var checkedCloneObj_Labels = [];
+
+		for (iiClonedObj = 0; iiClonedObj < clonedGamePieceObject_array.length; iiClonedObj++)
+		{
+			var currentClonedObj = clonedGamePieceObject_array[iiClonedObj];
+
+			var currentClonedObjLabel = currentClonedObj.GetLabel();
+			
+			var currentClonedObjLabel_index = checkedCloneObj_Labels.indexOf(currentClonedObjLabel);
+
+			expect(currentClonedObjLabel_index).toBeLessThan(0)
+
+			if (currentClonedObjLabel)
+			{
+				checkedCloneObj_Labels.push(currentClonedObjLabel);
+			}
+		}
+
+	})
 	describe(" -> gameObject", function(){
 		var gamePieceProto;
 		var newProtoString;

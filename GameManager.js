@@ -337,9 +337,12 @@ function GameManager(){
 					this.SetProperty = SetProperty;
 					this.GetProperty = GetProperty;
 					this.DoesPropExist = DoesPropExist;
-					this.GetType = GetType;
+
 					this.DeleteProperty = DeleteProp;
 					this.AddProperty = AddProp;
+
+
+					this.GetType = GetType;
 
 					this.GetAllProperties = GetAllProperties;
 
@@ -351,7 +354,7 @@ function GameManager(){
 					var currentProto = _gameObjectProtos[inputParams.typeName]
 
 					this.objectProto = GetObjectProto();
-					this.SetObjectProto = SetObjectProto;
+					//this.SetObjectProto = SetObjectProto;
 
 					for (iiProp = 0; iiProp < inputParamsProps.length; iiProp++)
 					{
@@ -883,15 +886,60 @@ function GameManager(){
 
 	function CloneGameObject(inputGameObject, options)
 	{
-		var objProps = inputGameObject.GetAllProperties();
+		var getPropsType = typeof inputGameObject.GetAllProperties;
+		var objProps = {};
+		if (getPropsType != 'function')
+		{
+			throw "Invalid inputGameObject properties. Expected function, received " + getPropsType;
+			return;
+		}
+		else
+		{
+			objProps = inputGameObject.GetAllProperties();
+		}
 		var objPropStrings = Object.keys(objProps)
+
+		var _options;
+
+		if (!options)
+		{
+			_options = {
+				'howMany': 1,
+				'objectLabels': []
+			};
+		}
+		else if (!options.howMany && !options.objectLabels)
+		{
+			_options = {
+				'howMany': 1,
+				'objectLabels': []
+			}
+
+		}
+		else if (!options.howMany)
+		{
+			_options = options;
+		 	_options.howMany = 1;
+
+		}
+
+		else if (!options.objectLabels)
+		{
+			_options = options;
+			_options.objectLabels = [];
+		}
+		else
+		{
+			_options = options;
+		}
 
 		var returnArray = [];
 
-		for (iiObject = 0; iiObject >= options.howMany; iiObject++)
+		for (iiObject = 0; iiObject < _options.howMany; iiObject++)
 		{
 			var newObjLabel;
-			var newObjProps = []
+			var newObjProps = [];
+			var testCount = iiObject;
 
 			for (iiProp = 0; iiProp < objPropStrings.length; iiProp++)
 			{
@@ -901,9 +949,9 @@ function GameManager(){
 				}
 			}
 
-			if (options.objectLabels[iiObject])
+			if (_options.objectLabels[iiObject])
 			{
-				newObjLabel = options.objectLabels[iiObject];
+				newObjLabel = _options.objectLabels[iiObject];
 			}
 			else
 			{
@@ -915,14 +963,11 @@ function GameManager(){
 				'objectLabel': newObjLabel,
 				'props': newObjProps
 			}
-			console.log(newGameObject_params)
 			var returnNewGameObject = CreateGameObject(newGameObject_params)
 
-			
 			returnArray[iiObject] = returnNewGameObject
 
 		}
-
 
 		return returnArray;
 	}
