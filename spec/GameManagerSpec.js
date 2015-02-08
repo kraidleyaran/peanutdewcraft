@@ -183,7 +183,7 @@ describe("GameManager", function() {
 		expect(clonedGamePieceOne_type).toBe('object')
 
 	})
-	it("Given an exisiting object, many new gameObjects exactly like the original gameObject should be able to be created by using GameManager.CloneGameObject(originalGameObject)", function(){
+	it("Given an exisiting object, many new gameObjects exactly like the original gameObject should be able to be created by using GameManager.CloneGameObject(originalGameObject options.howMany)", function(){
 
 		var gamePieceProto = {
 			'typeName': 'gamePiece',
