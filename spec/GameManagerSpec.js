@@ -12,6 +12,37 @@ describe("GameManager", function() {
 			'defaultPropValue': false
 		};
 	})
+	it("When an attempt is made to create a gameObject type without including a typeName property in the parameters, throw an error", function (){
+		var gamePieceProto = {
+			'props':[gamePiece_prop_test]
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var _testCreateGameObjectType_WithoutTypeName = function ()
+		{
+			MyGameManager.CreateGameObjectType(_typeArray);
+		}
+
+		expect(_testCreateGameObjectType_WithoutTypeName).toThrow("Invalid typeName " + undefined);
+	})
+	it("When an attempt is made to create a gameObject type with an empty typeName is made, throw an error", function (){
+		var gamePieceProto = {
+			'typeName': '',
+			'props':[gamePiece_prop_test]
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var _testCreateGameObjectType_WithoutTypeName = function ()
+		{
+			MyGameManager.CreateGameObjectType(_typeArray);
+		}
+
+		expect(_testCreateGameObjectType_WithoutTypeName).toThrow("Invalid typeName " + '');	
+	})
 	it("When a gameObject type is created, GetGameObjectTypes() should return a list with that typeName included", function(){
 		var gamePieceProto = {
 			'typeName': 'gamePiece',
@@ -73,7 +104,7 @@ describe("GameManager", function() {
 			MyGameManager.CreateGameObjectType(_typeArray);
 		}
 
-		expect(_testInvalidDataValueProp).toThrow(gamePiece_invalidDataValueProp_test.dataValue + " is not a valid data type n00b. Try again. " + "\n\r" + MyGameManager.GetValidDataTypes())
+		expect(_testInvalidDataValueProp).toThrow(gamePiece_invalidDataValueProp_test.dataValue + " is an invalid data type " + "\n\r" + "The following data types are valid: " + MyGameManager.GetValidDataTypes().toString())
 	})
 	it("Given a simple object with a single property, MyGameManager should be able to create an object Prototype succesfully without encountering an error.", function(){
 		
@@ -92,10 +123,11 @@ describe("GameManager", function() {
 		var _currentObjProtos = MyGameManager.GetGameObjectProtos();
 
 		var currentObjProto = _currentObjProtos[newProtoString]
+		var objProtoProps = currentObjProto.GetProps();
 
 		expect(newProtoString).toEqual(gamePieceProto.typeName);
 
-		expect(currentObjProto.typeName).toEqual(gamePieceProto.typeName);
+		expect(currentObjProto.GetTypeName()).toEqual(gamePieceProto.typeName);
 
 
 	});
@@ -121,7 +153,7 @@ describe("GameManager", function() {
 			MyGameManager.CreateGameObjectType(_typeArray)
 		}
 
-		expect(_testCreateGameObjectThrow).toThrow("gameObject Type " + sameGamePieceProto.typeName + " already exists")
+		expect(_testCreateGameObjectThrow).toThrow("gameObject typeName already exists: " + sameGamePieceProto.typeName)
 	});
 	it("When an attempt to create a new objectType where the input contains the exact same property name for different properties twice happens, throw an error", function(){
 		var gamePiece_prop_samePropNameTest = {
@@ -132,7 +164,7 @@ describe("GameManager", function() {
 		}
 
 		var samePropNameProto = {
-			'typeName': 'typeName ',
+			'typeName': 'gamePiece',
 			'props': [gamePiece_prop_samePropNameTest, gamePiece_prop_test]
 		}
 
@@ -144,7 +176,7 @@ describe("GameManager", function() {
 			MyGameManager.CreateGameObjectType(_typeArray);
 		}
 
-		expect(_testSamePropName_CreateGameTypeThrow).toThrow("Property " + gamePiece_prop_test.propName + " already exists in prototype. Check input object for same property names.");
+		expect(_testSamePropName_CreateGameTypeThrow).toThrow(gamePiece_prop_samePropNameTest.propName + " property already exists in prototype gamePiece");
 
 	})
 	it("When an attempt is made to set a gameObject prototype's property name to typeName or any variation thereof, throw an error", function(){
@@ -168,7 +200,7 @@ describe("GameManager", function() {
 			MyGameManager.CreateGameObjectType(_typeArray)
 		}
 
-		expect(_testCreateGameObjectType_WithTypeNameProp).toThrow("Cannot name property typeName (regardless of capitalization or trickery). Make sure if you're setting the type name in the params.props variable to set it in params.typeName")
+		expect(_testCreateGameObjectType_WithTypeNameProp).toThrow("Cannot name proprety typeName or any variation thereof")
 	})
 	it("Given an exisiting object, one new gameObject like the original gamObject should be able to be created by using GameManager.CloneGameObject(originalGameObject)", function(){
 
@@ -333,6 +365,218 @@ describe("GameManager", function() {
 			}
 		}
 
+	})
+	it("Adding multiple gameObject types in one function call should be possible", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+
+		var differentGamePieceProto = {
+			'typeName': 'differentGamePiece',
+			'props':[gamePiece_prop_test]
+		}
+		var _typeArray = []
+		_typeArray.push(gamePieceProto,differentGamePieceProto)
+
+		var _testAddMultipleGameObjectProtos = function()
+		{
+			MyGameManager.CreateGameObjectType(_typeArray)
+		}
+		expect(_testAddMultipleGameObjectProtos).not.toThrow();	
+
+	})
+	it("Adding the same protoType typeName in a one function call should throw an error", function(){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var sameGamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+		var _typeArray = []
+		_typeArray.push(gamePieceProto,sameGamePieceProto)
+
+		var _testAddMultipleGameObjectProtos = function()
+		{
+			MyGameManager.CreateGameObjectType(_typeArray)
+		}
+		expect(_testAddMultipleGameObjectProtos).toThrow();	
+
+	})
+	it("When multiple protoTypes are added in one function call, it should return their typeNames in an array", function (){
+		
+		var objProtoCount = 10;
+
+		var _typeArray = []
+		var _typeNameArray = []
+
+		for (iiObjProto = 0; iiObjProto < objProtoCount; iiObjProto++)
+		{
+			var gamePieceProto = {
+				'typeName': 'gamePiece' + iiObjProto,
+				'props':[gamePiece_prop_test]
+			}
+
+			_typeArray.push(gamePieceProto)
+			_typeNameArray.push(gamePieceProto.typeName)
+		}
+
+		var _gameObjectProtoTypeNameArray = MyGameManager.CreateGameObjectType(_typeArray)
+
+		for (iiTypeName = 0; iiTypeName < _gameObjectProtoTypeNameArray.length; iiTypeName++)
+		{
+			var currentObjTypeName = _gameObjectProtoTypeNameArray[iiTypeName];
+			var objTypeNameIndex = _typeNameArray.indexOf(currentObjTypeName)
+
+			expect(objTypeNameIndex).toBeGreaterThan(-1);
+		}
+	})
+	it("When a gameObject type is created, it's properties should be obtainable through prototype.GetProps()", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var newProto = _gameProtos[newProtoString]
+
+		var protoProps = newProto.GetProps();
+		var propKeys = Object.keys(protoProps);
+
+		expect(propKeys.length).toBeGreaterThan(0);
+
+	})
+	it("When a gameObject type is created, it's protoType should be able to add new properties via protoType.AddProps() function", function (){
+		
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+		var _propArray = [];
+		var _newPropCount = 10
+
+		for (iiNewProp = 0; iiNewProp < _newPropCount; iiNewProp++)
+		{
+			var newProtoProp = {
+				'propName': 'new property' + iiNewProp ,
+				'required': false,
+				'dataValue': 'boolean',
+				'defaultPropValue': false
+			}
+			
+			_propArray.push(newProtoProp)
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var newProto = _gameProtos[newProtoString]
+
+		newProto.AddProps(_propArray);
+		var protoProps = newProto.GetProps();
+		var propKeys = Object.keys(protoProps)
+
+		expect(propKeys.length).toEqual(_newPropCount + 1);
+
+	})
+	it("When an attempt is made using prototype.AddProps() to add properties that already exist, throw an error", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+		var newProtoProp = {
+			'propName': 'test',
+			'required': false,
+			'dataValue': 'boolean',
+			'defaultPropValue': false
+		}
+		var _propArray = [];
+		_propArray.push(newProtoProp)
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var newProto = _gameProtos[newProtoString]
+
+		var _testProtoAddExisitingProp_ThrowError = function()
+		{
+			newProto.AddProps(_propArray)
+		}
+
+		expect(_testProtoAddExisitingProp_ThrowError).toThrow(newProtoProp.propName + " property already exists in prototype " + newProtoString)
+	})
+	it("When prototype.SetProps() is used, it will add new properties or overwriting existing ones if labeld as such in the function parameters", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+		var newProtoProp = {
+			'propName': 'new property',
+			'required': false,
+			'dataValue': 'boolean',
+			'defaultPropValue': false
+		}
+
+		var overWriteExistingProp = {
+			'propName': gamePiece_prop_test.propName,
+			'required': false,
+			'dataValue': 'number',
+			'defaultPropValue': false
+		}
+
+		var _propArray = [];
+		_propArray.push(newProtoProp, overWriteExistingProp)
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var newProto = _gameProtos[newProtoString]
+
+		var newProtoProps = newProto.GetProps();
+		var _originalPropertyDataValue = newProtoProps[gamePiece_prop_test.propName].dataValue;
+
+		newProto.SetProps(_propArray)
+
+		var _newPropertyDataValue = newProtoProps[gamePiece_prop_test.propName].dataValue;
+
+		expect(_originalPropertyDataValue).not.toEqual(_newPropertyDataValue);
+		expect(_newPropertyDataValue).toEqual(overWriteExistingProp.dataValue);
+
+	})
+	it("When prototype.GetTypeName is used, it will get the current prototype's typeName", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var newProto = _gameProtos[newProtoString]
+		var protoTypeName = newProto.GetTypeName();
+
+		expect(protoTypeName).toEqual(gamePieceProto.typeName);
 	})
 	describe(" -> gameObject", function(){
 		var gamePieceProto;
