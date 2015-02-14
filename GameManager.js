@@ -39,7 +39,7 @@ function GameManager(){
 
 	theGameManager.GetValidDataTypes = GetValidDataTypes;
 
-	var _objTypes = ['string','number','boolean','array','object','function']
+	var _objTypes = ['string','number','boolean','array','object','function', 'null']
 
 	function GetValidDataTypes()
 	{
@@ -294,6 +294,8 @@ function GameManager(){
 			newProto.SetProps(currentInput.props);
 			returnStringArray.push(newProto.GetTypeName());
 		}
+
+		return returnStringArray;
 	}
 
 	function DoesGameObjectTypeExist(inputObjType)
@@ -327,6 +329,7 @@ function GameManager(){
 		for (iiInputParam = 0; iiInputParam < inputParamArray.length; iiInputParam++)
 		{
 			var inputParams = inputParamArray[iiInputParam];
+
 			var newObjProtoType;
 			if (!inputParams.typeName || inputParams.typeName == null)
 			{
@@ -408,6 +411,7 @@ function GameManager(){
 								}
 								
 							}
+							
 							else if (propExistInProto == false)
 							{
 								throw currentParamPropObj.propName + " does not exist in GameObject Type " + inputParams.typeName;
@@ -638,7 +642,7 @@ function GameManager(){
 								message.peer
 								message.propertyName;
 						*/
-						function receive(message)
+						function Receive(message)
 						{
 							for (iiProperty = 0; iiProperty < message.length; iiProperty++)
 							{

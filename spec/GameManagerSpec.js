@@ -578,6 +578,151 @@ describe("GameManager", function() {
 
 		expect(protoTypeName).toEqual(gamePieceProto.typeName);
 	})
+	it("Given an exisiting gameObject prototype, another prototype should be able to be created using the original as it's base", function(){
+
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newGamePieceProto_prop = {
+			'propName': 'new property',
+			'dataValue': 'number',
+			'required': false,
+			'defaultPropValue': 0
+		}
+
+		var _propArray = [];
+		_propArray.push(newGamePieceProto_prop)
+
+
+		var newGamePieceProto = {
+			'typeName': gamePieceProto.typeName + 1,
+			'modelProto': gamePieceProto.typeName,
+			'props': _propArray
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var _newTypeArray = [];
+		_newTypeArray.push(newGamePieceProto)
+
+		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+		var newProtoString = newProtoStringArray[0];
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+
+		var newerProtoStringArray;
+
+		var _testCreateprotoFromExisting_NoError = function()
+		{
+			newerProtoStringArray = MyGameManager.CreateProtoFromExisting(_newTypeArray);
+		}
+		
+		expect(_testCreateprotoFromExisting_NoError).not.toThrow();
+	})
+	it("Given an existing gameObject prototype, another prototype should be able to be created adding or replacing previous properties on the old prototype", function (){
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newGamePieceProto_prop = {
+			'propName': 'test',
+			'dataValue': 'number',
+			'required': false,
+			'defaultPropValue': 0
+		}
+
+		var _propArray = [];
+		_propArray.push(newGamePieceProto_prop)
+
+
+		var newGamePieceProto = {
+			'typeName': gamePieceProto.typeName + 1,
+			'modelProto': gamePieceProto.typeName,
+			'props': _propArray
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var _newTypeArray = [];
+		_newTypeArray.push(newGamePieceProto)
+
+		MyGameManager.CreateGameObjectType(_typeArray);
+		var protoStringArray = MyGameManager.CreateProtoFromExisting(_newTypeArray)
+
+		var _gameProtos = MyGameManager.GetGameObjectProtos();
+		var _testProto = _gameProtos[protoStringArray[0]]
+		var _protoProps = _testProto.GetProps();
+		var _propKeys = Object.keys(_protoProps)
+		var _propIndex = _propKeys.indexOf(newGamePieceProto_prop.propName)
+
+		expect(_propIndex).not.toBeLessThan(0)
+		expect(_protoProps[_propKeys[_propIndex]].dataValue).toEqual(newGamePieceProto_prop.dataValue)
+
+	})
+	it("After a gameObject prototype has been created using GameManager.CreateProtoFromExisting(), a new gameObject should be able to be created using GameManager.CreateGameObject()", function(){
+		
+		var gamePieceProto = {
+			'typeName': 'gamePiece',
+			'props':[gamePiece_prop_test]
+		}
+
+		var newGamePieceProto_prop = {
+			'propName': 'new property',
+			'dataValue': 'number',
+			'required': false,
+			'defaultPropValue': 0
+		}
+
+		var _propArray = [];
+		_propArray.push(newGamePieceProto_prop)
+
+
+		var newGamePieceProto = {
+			'typeName': gamePieceProto.typeName + 1,
+			'modelProto': gamePieceProto.typeName,
+			'props': _propArray
+		}
+
+		var _typeArray = [];
+		_typeArray.push(gamePieceProto);
+
+		var _newTypeArray = [];
+		_newTypeArray.push(newGamePieceProto)
+
+		MyGameManager.CreateGameObjectType(_typeArray);
+		MyGameManager.CreateProtoFromExisting(_newTypeArray);
+
+		var newGamePiece_prop_test = {
+			'propName': 'test',
+			'propValue': true
+		}
+
+		var otherGamePiece_prop_test = {
+			'propName': newGamePieceProto_prop.propName,
+			'propValue': 1
+		}
+
+		var newGamePiece = {
+			'typeName':newGamePieceProto.typeName,
+			'objectLabel': '',
+			'props': [newGamePiece_prop_test, otherGamePiece_prop_test ]
+		}
+
+		var _gamePieceArray = []
+		_gamePieceArray.push(newGamePiece)
+
+		var _testCreateGameObject_AfterUsingCreateProtoFromExisting_noError = function()
+		{
+			MyGameManager.CreateGameObject(_gamePieceArray);	
+		}
+
+		expect(_testCreateGameObject_AfterUsingCreateProtoFromExisting_noError).not.toThrow()
+
+	})
 	describe(" -> gameObject", function(){
 		var gamePieceProto;
 		var newProtoStringArray;
@@ -602,9 +747,11 @@ describe("GameManager", function() {
 				'propName': 'test',
 				'propValue': true
 			}
+
+
 		})
 
-		it("Given that a gameObject created from a gameObject protoype with a certain property exists, that property's value should be obtainable", function(){	
+		it("Given that a gameObject created from a gameObject prototype with a certain property exists, that property's value should be obtainable", function(){	
 
 			var newGamePiece = {
 				'typeName': 'gamePiece',

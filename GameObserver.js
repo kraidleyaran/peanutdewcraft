@@ -42,9 +42,7 @@ function GameObserver(_gameLibrary, _gameManager)
 
 	commandValue is the value of whatever you're setting. If the 'peer' == 'value', then you're going to set the property's value on the bject
 		If the 'peer' == 'value' and the 'command' == 'execute', then 'value' will be the param or params in an array.
-			If you you're going to
-		
-	
+			If you you're going to	
 
 	Available commands for GameObjects (using gameObject, objectLabel, or gameLibrary):
 		Properties - 'add','set' and 'remove'
@@ -96,7 +94,7 @@ function GameObserver(_gameLibrary, _gameManager)
 		receiver.objectLabel = ['customLabelForObject1','customLabelForObject2']
 			- objectLabel is the property containing the label or labels you wish to send the message to
 		receiver.protoGameObject = [gameObjectype1, gameObjectype2
-]k			- Makes changes in the protoGameObject, which THEN APPLIES ALL CHANGES TO OBJECTS OF THAT GAME TYPE
+			- Makes changes in the protoGameObject, which THEN APPLIES ALL CHANGES TO OBJECTS OF THAT GAME TYPE
 				(the gameManager.)
 
 	
@@ -144,7 +142,6 @@ function GameObserver(_gameLibrary, _gameManager)
 					}
 
 					receivedList.objectLibraries.push(currentLibType);
-
 				}
 
 				var objectLibraryIndex = receiverTypeStrings.indexOf('objectLibraries');
@@ -236,8 +233,6 @@ function GameObserver(_gameLibrary, _gameManager)
 								}
 							}
 						}
-						break;
-					case 'protoGameObject':
 						break;
 					case 'gameManager':
 						break;
