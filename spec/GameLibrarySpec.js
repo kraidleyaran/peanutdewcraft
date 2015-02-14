@@ -152,6 +152,53 @@ describe("GameLibrary", function(){
 		}
 		expect(_testAddLibrarTypeThatIsAnEmptyString_ThrowError).toThrow("libraryType is invalid: " + newLibraryString)		
 	})
+	it("Given the attempt that invalid input is used for a library's AddToLibrary() function, an error should be thrown", function (){
+		var _newGameLibString = 'Game Pieces'
+		var libStringArray = []
+		libStringArray.push(_newGameLibString);
+
+		MyGameLibrary.AddLibraryType(libStringArray);
+
+		var _libArray = MyGameLibrary.GetLibrary(libStringArray);
+
+		var testLibrary = _libArray[_newGameLibString];
+
+		var _randomObject = {}
+
+		var _randomFunction = function(){};
+
+		var _testLibraryAddToLibraryInvalidInputString_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(_newGameLibString);
+		}
+		var _testLibraryAddToLibraryInvalidInputNumber_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(0);
+		}
+		var _testLibraryAddToLibraryInvalidInputObject_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(_randomObject);
+		}
+		var _testLibraryAddToLibraryInvalidInputFunction_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(_randomFunction);
+		}
+		var _testLibraryAddToLibraryInvalidInputBoolean_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(true)
+		}
+		var _testLibraryAddToLibraryInvalidInputUndefined_ThrowError = function()
+		{
+			testLibrary.AddToLibrary(undefined)
+		}
+
+		expect(_testLibraryAddToLibraryInvalidInputString_ThrowError).toThrow("Parameter must be an array.")
+		expect(_testLibraryAddToLibraryInvalidInputNumber_ThrowError).toThrow("Parameter is invalid.")
+		expect(_testLibraryAddToLibraryInvalidInputObject_ThrowError).toThrow("Parameter must be an array.")
+		expect(_testLibraryAddToLibraryInvalidInputFunction_ThrowError).toThrow("Parameter must be an array.")
+		expect(_testLibraryAddToLibraryInvalidInputBoolean_ThrowError).toThrow("Parameter must be an array.")
+		expect(_testLibraryAddToLibraryInvalidInputUndefined_ThrowError).toThrow("Parameter is invalid.")
+	})
 	describe(" -> gameObjects", function(){
 		var gamePiece_prop_test;
 		var gamePieceProto;
@@ -605,7 +652,6 @@ describe("GameLibrary", function(){
 			expect(_testGameLibraryAddObjectThatAlreadyExists_ThrowError).toThrow("Object " + newGamePiece_Object + " already exists in library " + _newGameLibString)
 
 		})
-
 
 	})
 })

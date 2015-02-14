@@ -210,13 +210,26 @@ function GameLibrary()
 			newCustomLib.AddToLibrary = function(inputObjectArray)
 			{
 				var responseArray = [];
+				if (!inputObjectArray)
+				{
+					throw "Parameter is invalid."
+					return;
+				}
+				var paramType = typeof inputObjectArray
+				
+				if (paramType == 'string' || !inputObjectArray.length)
+				{
+					throw "Parameter must be an array."
+					return;
+				}
 				for (iiObject = 0; iiObject < inputObjectArray.length; iiObject++)
 				{
 					var inputObject = inputObjectArray[iiObject];
 					var _doesObjExist = DoesObjectExistInLibrary(this.libName, inputObject);
+
 					if (!inputObject.typeName || inputObject.typeName == null || inputObject.typeName == '')
 					{
-						throw "inputObject must have a typeName."
+						throw "inputObject must have a valid typeName."
 						return;
 					}
 
