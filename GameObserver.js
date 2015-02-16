@@ -35,96 +35,78 @@ function GameObserver(_gameLibrary, _gameManager)
 	var _gameObjectTypes = _gameManager.GetGameObjectTypes();
 	var _gameObjectProtos = _gameManager.GetGameObjectProtos();
 
+	this.SendMessage = SendMessage;
+
 	/*
-	Sending messages to gameObjects is done by using the following message format for gameObjects (sending to gameObjects, gameLibaries, or ObjectLabel)
+		SendMessage sends a message to all objects of a given library, gameObject type, or containing a given gameObject label.
 
-	Peer indicates whether you're modifying the value of the property, or the actual property itself
+		When using SendMessage, you must include a receiver object, and a message object.
 
-	commandValue is the value of whatever you're setting. If the 'peer' == 'value', then you're going to set the property's value on the bject
-		If the 'peer' == 'value' and the 'command' == 'execute', then 'value' will be the param or params in an array.
-			If you you're going to	
+		The receiver object should contain 1 to 3 of the following properties:
+			'objectLibraries': ['libraryName1', 'libraryName2', 'libraryName3'],
+			'gameObjectTypes': ['gameObjectTypeName1', 'gameObjectTypeName2', 'gameObjectTypeName3'],
+			'objectLabels': ['objectLabel1', 'objectLabel2', 'objectLabel3']
 
-	Available commands for GameObjects (using gameObject, objectLabel, or gameLibrary):
-		Properties - 'add','set' and 'remove'
-			Add - adds a property to receipients of message
-			Set - sets a property's data type ('string','number','boolean','array','object','function') - Only works with protos objects.
-			Remove - Remvoes the property from the object
-		Keys - 'exeucte', 'add', and 'set'
-			Add - adds the message's value to the current value (only works if datatypes are same, and is a string, number, or an array)
-			Set - sets the property's value
-			Execute - if the property is a function, it will execute the function.
-				CommandValue will be an array containing paramters to be passed into the function
+		If a receiver object is absent, the message is sent to all gameObjects in every gameLibrary
 
-		message[0] = {
-			'propertyName':'my property',
-			'peer': 'property',
-			'command': 'set',
-			'commandValue': 'string'
-		}
-		message[1] = {
-			'propertyName': 'my property',
-			'peer': 'value',
-			'command': 'set',
-			'commandValue': 'this is my value'
-		}
-		message[2] = {
-			'propertyName': 'some function I have',
-			'peer':'value',
-			'command':'execute',
-			'commandValue': ['firstParam', 'secondParam']
+		The message object is an array with objects that should contain the following properties:
+			message[0] = {
+				'peer': this should be 'property' or 'value'
+					'property' indicates fo
+				'propertyName': name of the property on the gameObject
+				'command': set, add, execute, or remove
+					set - sets a property's value regardless of peer
 
-		}
+					add - depends on peer:
+						if peer is 'property', add's a new property to the object with propertyName as it's name, and commandValue as it's value
+						if peer is 'value', add's the commandValue to the current value
+						(trust me, I know this shit is dangerous, but it's easy? ugh....)
 
+					remove - depends on peer:
+						if peer is 'property', remove's property from object
+						if peer is 'value', set's property value to 'null'
+					execute - executes the property as if it were a function regardless of peer
 
-
-	
-	The receiver contains 1 property, which contains four arrays.
-		receiver = {
-			'gameObjectTypes':[],
-			'objectLibrary':[], 
-			'objectLabel':[],
-			'protoGameObject':[],
-			'gameManager':,
-			'gameLibrary':
-		}
-		receiver.gameObjectTypes = ['objectType1','objectType2']
-			- gameObject is the property containg the gameObject types you wish to send to
-		receiver.objectLibraries = ['libraryType1', 'libraryType2']
-			- objectLibraries is the property containing the libraries you wish to send to
-		receiver.objectLabel = ['customLabelForObject1','customLabelForObject2']
-			- objectLabel is the property containing the label or labels you wish to send the message to
-		receiver.protoGameObject = [gameObjectype1, gameObjectype2
-			- Makes changes in the protoGameObject, which THEN APPLIES ALL CHANGES TO OBJECTS OF THAT GAME TYPE
-				(the gameManager.)
-
-	
+				'commandValue': the value the property is being set to, or parameter used if the command is 'execute'
+				;
+			}
 	*/
 
-	function SendMessage(receiver, message)
+	function SendMessage(receiverMessageObject)
 	{
-
-		if (receiver)
+		if (!receiverMessageObject.message)
 		{
-
-			var receivedList = {
-				'gameObject':[],
+			throw "No message";
+			return;
+		}
+		var message = receiverMessageObject.message;
+		var receivedList = {
+				'gameObjects':[],
 				'objectLibraries':[],
-			}
-			
-			var receiverTypeStrings = Object.keys(receiver.receiveTypes);
-			/*
-			SendMessage first checks to see if any library types are present. After that, it checks for gameObject types
-			Once both of those are done, it goes through the rest which should be receiving messages separately anyway due
-			to their different methods.
+		}
 
-			Once an object receives the message, it is put on the receivedList to assure it does not receive the message again.
-			*/
+		if (receiverMessageObject.receiver)
+		{
+			var receiver = receiverMessageObject.receiver;
+			if (!receiver.objectLibraries)
+			{
+				receiver.objectLibraries = [];
+			}
+			if (!receiver.gameObjectTypes)
+			{
+				receiver.gameObjectTypes = [];
+			}
+			if (!receiver.objectLabels)
+			{
+				receiver.objectLabels = [];
+			}
+
 			if (receiver.objectLibraries.length > 0)
 			{
 				for (iiLibType = 0; iiLibType < receiver.objectLibraries.length; iiLibType++)
 				{
 					var currentLibType = receiver.objectLibraries[iiLibType];
-					var doesLibTypeExist = _gameLibrary.DoesLibrarTypeExist(currentLibType)
+					var doesLibTypeExist = _gameLibrary.DoesLibraryTypeExist(currentLibType)
 					if (doesLibTypeExist == false)
 					{
 						throw 'Library Type ' + currentLibType + ' does not exist';
@@ -132,28 +114,31 @@ function GameObserver(_gameLibrary, _gameManager)
 					}
 
 					var currentLib = _gameLibs[currentLibType];
-
-					for (iiObject = 0; iiObject < currentLibType.length; iiOBject++)
+					var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
+					if (libRecIndex < 0)
 					{
-						var currentObject = currentLib[iiObject];
-						currentObject.receieve(message);
-
-						receivedList.gameObjects.push(currentObject);
+						for (iiObject = 0; iiObject < currentLib.objectLib.length; iiObject++)
+						{
+							var currentObject = currentLib.objectLib[iiObject];
+							var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
+							if (objRecIndex < 0)
+							{
+								currentObject.Receive(message);
+								receivedList.gameObjects.push(currentObject);	
+							}
+							
+						}
+						receivedList.objectLibraries.push(currentLibType);						
 					}
-
-					receivedList.objectLibraries.push(currentLibType);
 				}
-
-				var objectLibraryIndex = receiverTypeStrings.indexOf('objectLibraries');
-				receiverTypeStrings.splice(objectLibraryIndex, 1)
 			}
-			// Removes the objectLibrary from the list of keys because we already sent to the object libraries above.
-			// Check gameObjectTypes, then send messages to any gameObjectTypes in the parameters
-			if (receiver.gameObjectTypes.length >  0)
+
+			if (receiver.gameObjectTypes.length > 0)
 			{
 				for (iiObjType = 0; iiObjType < receiver.gameObjectTypes.length; iiObjType++)
 				{
 					var currentObjType = receiver.gameObjectTypes[iiObjType];
+					var _libTypes = _gameLibrary.GetLibraryTypes();
 
 					for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
 					{
@@ -164,94 +149,89 @@ function GameObserver(_gameLibrary, _gameManager)
 
 						var objTypeExistInLib = currentLib.DoesObjectTypeExistInLibrary(currentObjType);
 
-						if (objTypeExistInLib == false || libNameIndex > 0)
+						if (objTypeExistInLib == false || libNameIndex >= 0)
 						{
 							continue;
 						}
+						
+						var currentObjType_List = currentLib.objList[currentObjType];
 
-						for (iiObj = 0; iiObj < currentLib.objList[currentObjType].length; iiObj++)
+						for (iiObj = 0; iiObj < currentObjType_List.length; iiObj++)
 						{
-							var currentObjIndex = currentLib.objList[currentObjType].indexOf(iiObj)
+							
+							var currentObj = currentObjType_List[iiObj];
 
-							var currentObj = currentLib.objectLib[iiObj];
-							var objIndex = receivedList.gameObject.indexOf(currentObj);
-
-							if (objIndex > 0)
+							var objIndex = receivedList.gameObjects.indexOf(currentObj);
+							if (objIndex >= 0)
 							{
 								continue;
 							}
-							
-							currentObj.receive(message);
+							currentObj.Receive(message);
 							receivedList.gameObjects.push(currentObject);
 						}
 					}
-				}
-				var gameObjectTypeIndex = receiverTypeStrings.indexOf('gameObjectTypes');
-				receiverTypeStrings.splice(gameObjectTypeIndex, 1)				
+				}	
 			}
-			//Begin For & Switch statement for the rest of the cases
-			for (iiReceiver = 0; iiReceiver < receiverTypeStrings.length; iiReceiver++)
+
+			if(receiver.objectLabels.length > 0)
 			{
-				var currentReceiverString = receiverTypeStrings[iiReceiver]
-				var currentReceiver = receiver[currentReceiverString]
-				
-				switch (currentReceiverString)
+				for (iiObjLabel = 0; iiObjLabel < receiver.objectLabels.length; iiObjLabel++)
 				{
-					case 'objectLabel':
-						for (iiObjLabel = 0; iiObjLabel < currentReceiver.length; iiObjLabel++)
+					var currentObjLabel = receiver.objectLabels[iiObjLabel];
+					var _libTypes = _gameLibrary.GetLibraryTypes();
+
+					for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
+					{
+						var currentLibNameString = _libTypes[iiLib];
+						var libNameIndex = receivedList.objectLibraries.indexOf(currentLibNameString);
+						
+						var currentLib = _gameLibs[currentLibNameString];
+						
+						if (libNameIndex >= 0)
 						{
-							var currentObjLabel = currentReceiver[iiObjLabel];
-
-							for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
-							{
-								var currentLibNameString = _libTypes[iiLib];
-								var libNameIndex = receivedList.objectLibraries.indexOf(currentLibNameString);
-								
-								var currentLib = _gameLibs[currentLibNameString];
-								
-								if (libNameIndex > 0)
-								{
-									continue;
-								}
-								
-								var currentObjLabelList = currentLib.objLabelList[currentObjLabel]
-
-								for (iiObj = 0; iiObj < currentObjLabelList.length; iiObj++)
-								{
-									var currentObjIndex = currentObjLabelList[iiObj];
-
-									var currentObj = currentLib.objectLib[currentObjIndex];
-
-									var objIndex = receivedList.gameObject.indexOf(currentObj);
-
-									if (objIndex > 0)
-									{
-										continue;
-									}
-									currentObj.receive(message);
-									receivedList.gameObjects.push(currentObject);
-								}
-							}
+							continue;
 						}
-						break;
-					case 'gameManager':
-						break;
-					case 'gameLibrary':
-						break;
-					case null:
-					case undefined:
-						break;
-					default:
-						throw "Receiver Type does not exist"
-						break;
+						
+						var currentObjLabelList = currentLib.objLabelList[currentObjLabel]
+
+						for (iiObj = 0; iiObj < currentObjLabelList.length; iiObj++)
+						{
+							var currentObj = currentObjLabelList[iiObj];
+							var objIndex = receivedList.gameObjects.indexOf(currentObj);
+
+							if (objIndex >= 0)
+							{
+								continue;
+							}
+							currentObj.Receive(message);
+							receivedList.gameObjects.push(currentObj);
+						}
+					}
 				}
 			}
 		}
 		else
-		{
-			throw "No receiver?"
-			return;
+		{	
+			var _libTypes = _gameLibrary.GetLibraryTypes();
+			for (iiLib = 0; iiLib < _libTypes.length; iiLib++ )
+			{
+				var currentLib = _gameLibs[_libTypes[iiLib]]
+				var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
+				if (libRecIndex < 0)
+				{
+					for (iiObject = 0; iiObject < currentLib.objectLib.length; iiObject++)
+					{
+						var currentObject = currentLib.objectLib[iiObject];
+						var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
+						if (objRecIndex < 0)
+						{
+							currentObject.Receive(message);
+							receivedList.gameObjects.push(currentObject);
+						}
+					}
+					receivedList.objectLibraries.push(currentLib.libName);				
+				}
+			}
 		}
 	}
-
 }

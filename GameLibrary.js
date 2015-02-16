@@ -20,6 +20,7 @@ function GameLibrary()
 	this.GetLibraries = GetLibraries;
 
 	this.IsLibValid = IsLibValid;
+	this.DoesLibraryTypeExist = DoesLibraryTypeExist;
 
 	function IsLibValid(inputLibString)
 	{
@@ -196,13 +197,13 @@ function GameLibrary()
 
 				var currentObjTypeList = Object.keys(newCustomLib.objList)
 				var inputObjIndex = currentObjTypeList.indexOf(inputObjectTypeName)
-				if (inputObjIndex > 0)
+				if (inputObjIndex < 0)
 				{
-					_response = true;
+					_response = false;
 				}
 				else
 				{
-					_response = false;
+					_response = true;
 				}
 
 				return _response;
@@ -241,26 +242,22 @@ function GameLibrary()
 
 						if (_doesObjTypeExistInLib == false)
 						{
-							this.objList[inputObject.typeName] = [] 
-							this.objList[inputObject.typeName].push(inputObject)
+							this.objList[inputObject.typeName] = [] 							
 						}
-						else
-						{
-							this.objList[inputObject.typeName].push(inputObject)
-						}
+						this.objList[inputObject.typeName].push(inputObject)
 						var inputObjectLabel = inputObject.GetLabel();
 						if (inputObjectLabel != null)
 						{
-							var currentObjLabels = Object.keys(objLabelList)
+							var currentObjLabels = Object.keys(this.objLabelList)
 							var objLabelIndex = currentObjLabels.indexOf(inputObjectLabel)
 
 							if (objLabelIndex < 0)
 							{
+								this.objLabelList[inputObjectLabel] = []
 								this.objLabelList[inputObjectLabel].push(inputObject)
 							}
 							else
 							{
-								this.objLabelList[inputObjectLabel] = []
 								this.objLabelList[inputObjectLabel].push(inputObject)
 							}
 						}
@@ -386,33 +383,13 @@ function GameLibrary()
 
 	function GetLibraries()
 	{
-		var response;
-		var libLength = Object.keys(customLibs).length;
-		if (libLength > 0)
-		{
-			response = customLibs;
-		}
-		else
-		{
-			response = null;
-		}
-
+		var response = customLibs;
 		return response;
 	}
 
 	function GetLibraryTypes()
 	{
-		var response;
-		var customLibTypes = Object.keys(customLibs)
-		if (customLibTypes.length > 0)
-		{
-			response = customLibTypes
-		}
-		else
-		{
-			response = [];
-		}
-
+		var response = Object.keys(customLibs)
 		return response;
 	}
 

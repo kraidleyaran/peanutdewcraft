@@ -1,6 +1,5 @@
 function GameManager(){
 
-	//var _gameObjectTypes = {};
 	var _gameObjectProtos = {};
 
 	Object.defineProperty(_gameObjectProtos, 'orphan', {
@@ -8,9 +7,6 @@ function GameManager(){
 		'writable': false
 	})
 	
-	//these were used for storing Object protos efficiently, but I found a better way using associate arrays aka actual objects.
-	//var _gameObjectId = 0;
-	//var _gameEmptyIndex = new Array();
 
 	var _gameObserver = null;
 
@@ -24,8 +20,8 @@ function GameManager(){
 	this.CreateGameObject = CreateGameObject;
 
 	this.CreateGameObjectType = CreateGameObjectType;
-	this.SetGameObjectType = SetGameObjectType; //needs GameObserver update
-	this.RemoveGameObjectType = RemoveGameObjectType; //needs GameObserver update
+	this.SetGameObjectType = SetGameObjectType;
+	this.RemoveGameObjectType = RemoveGameObjectType; 
 	this.GetGameObjectTypes = GetGameObjectTypes;
 
 	this.CreateProtoFromExisting = CreateProtoFromExisting;
@@ -357,7 +353,7 @@ function GameManager(){
 					this.SetType = SetType;
 
 
-					this.receive = receive;
+					this.Receive = Receive;
 
 					//var _gjGameObserver = null;
 					this.SetProperty = SetProperty;
@@ -478,7 +474,7 @@ function GameManager(){
 						}
 						else
 						{
-							throw "Property " + inputProp + " does not exist in object " + that;
+							throw "Property " + inputProp + " does not exist in object " + props;
 						}
 					}
 
@@ -640,34 +636,28 @@ function GameManager(){
 							message.peer
 							message.propertyName;
 					*/
-					function Receive(message)
+					function Receive(messageArray)
 					{
-						for (iiProperty = 0; iiProperty < message.length; iiProperty++)
+						for (iiMessage = 0; iiMessage < messageArray.length; iiMessage++)
 						{
-							var currentProperty = message[iiProperty];
-							var currentPropName = currentProperty.propertyName;
-
-							var currentValue = currentProperty.commandValue;
-							var currentCommand = currentProperty.command;
-							var currentPeer = currentProperty.peer;
-							if (!currentPeer || currentPeer != 'property' || currentPeer != 'value')
+							var currentMessage = messageArray[iiMessage];
+							var currentPropName = currentMessage.propertyName;
+							var currentValue = currentMessage.commandValue;
+							var currentCommand = currentMessage.command;
+							var currentPeer = currentMessage.peer;
+							if (!currentPeer || currentPeer != 'property' && currentPeer != 'value')
 							{
-								throw 'No peer'
+								throw 'Peer is invalid.'
 								return;
 							}
 							if (!currentPropName)
 							{
-								throw 'No propertyName'
-								return;
-							}
-							if (!currentValue)
-							{
-								throw 'No currentValue'
+								throw 'No propertyName in message'
 								return;
 							}
 							if (!currentCommand)
 							{
-								throw 'No currentCommand'
+								throw 'No currentCommand in message'
 								return;
 							}
 							var doesInputPropExist = DoesPropExist(currentPropName)
@@ -680,12 +670,11 @@ function GameManager(){
 										case 'property':
 											if (doesInputPropExist == false)
 											{
-												props[currentPropName] = currentValue	
-											}
-											else
-											{
-												throw 'Property ' + currentPropName + ' already exists'
-												return;
+												var newObjProp = {
+													'propName':currentPropName,
+													'propValue': currentValue
+												}
+												that.AddProperty([newObjProp])	
 											}
 											break;
 										case 'value':
@@ -695,51 +684,26 @@ function GameManager(){
 											}
 											break;
 										default:
-											throw 'Invalid command';
-											return;
 											break;
 									}
 									break;
 								case 'set':
-									switch (currentPeer)									
+									if (doesInputPropExist == true)
 									{
-										case 'property':
-											throw 'Why are you setting a non-protype\'s property dataType?';
-											return;	
-										case 'value':
-											if (doesInputPropExist == true)
-											{
-												that.SetProperty(props[currentPropName], currentValue)	
-											}
-											break;
-										default:
-											throw 'Peer is invalid.'
+										that.SetProperty(currentPropName, currentValue)	
 									}
-									
 									break;
 								case 'execute':
-									if (currentPeer == 'property')
-									{
-										throw 'Cannot execute on a property.'
-										return;
-									}
-									/*
-									else if (doesInputPropExist.bool == false)
-									{
-										throw 'Property does not exist'
-									}
-									*/
-									else if (doesInputPropExist == true)
+									if (doesInputPropExist == true)
 									{
 										var objProp = props[currentPropName]
-										objProp.apply(that, currentValue)
+										objProp(currentValue);	
 									}
 									break;
 								case 'remove':
 									if (currentPeer != 'property')
 									{
-										throw 'Can only remove a property. If you\'re setting a value, then set peer to \'value\' '
-										return;
+										that.SetProperty(currentPropName, null)
 									}
 									else if(doesInputPropExist == true)
 									{
@@ -747,8 +711,6 @@ function GameManager(){
 									}
 									break;
 								default:
-									throw 'Invalid command ' + currentCommand;
-									return;
 									break;
 								}
 							}
@@ -1071,12 +1033,6 @@ function GameManager(){
 			throw "GameObserver has already been set"
 		}
 	}
-
-	function receive(message)
-	{
-
-	}
-
 }
 
 GameManager.prototype.CreateGameObjectType =  function (inputParams)
