@@ -213,7 +213,7 @@ function GameObserver(_gameLibrary, _gameManager)
 		else
 		{	
 			var _libTypes = _gameLibrary.GetLibraryTypes();
-			for (iiLib = 0; iiLib < _libTypes.length; iiLib++ )
+			for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
 			{
 				var currentLib = _gameLibs[_libTypes[iiLib]]
 				var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);

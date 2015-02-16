@@ -422,9 +422,12 @@ describe("GameObserver", function (){
 	})
 	it("Using the 'execute' command with any peer will execute a property as a function", function(){
 		var messageArray = [];
-		var newFunction = function()
+		var newFunction = _setThisToFalse;
+		function _setThisToFalse()
 		{
-			return;
+			return function(){
+				this['_masterGameObject'].SetProperty('test', false)
+			}
 		}
 		messageArray[0]  = {
 			'peer':'property',
@@ -454,10 +457,96 @@ describe("GameObserver", function (){
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
 			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];			
+				var _currentTestObject = _currentTestLib.objectLib[iiObject];	
 				expect(_currentTestObject.GetProperty('test')).toEqual(false)
 			}
 		}	
 
+	})
+	it("Using the 'execute' command with any peer on a property that is not a function should throw an error", function(){
+		var messageArray = [];
+		messageArray[0]  = {
+			'peer':'property',
+			'propertyName':'test',
+			'command':'execute',
+			'commandValue': null,
+		}
+
+		var messageObject = {
+			'message': messageArray
+		}
+
+		var _testExecuteCommandOnNonFunction_NoError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)	
+		}
+		expect(_testExecuteCommandOnNonFunction_NoError).not.toThrow();
+		
+	})
+	it("If a message is sent to a gameLibrary, gameObjecttype, and objectLabel that a gameObject is all a part of, the gameObject should only receive the message once", function(){
+		var messageArray = [];
+		var newPropertyString = 'new property'
+		messageArray[0]  = {
+			'peer':'property',
+			'propertyName':newPropertyString,
+			'command':'add',
+			'commandValue': 1
+		}
+
+		var messageObject = {
+			'message': messageArray,
+			'receiver':{
+				'objectLabels':['Test Label 1'],
+				'objectLibraries':[gamePieceLibString],
+				'gameObjectTypes':['gamePiece']
+			}
+		}
+
+		MyGameObserver.SendMessage(messageObject)
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':newPropertyString,
+			'command':'add',
+			'commandValue': 1
+		}
+		MyGameObserver.SendMessage(messageObject)
+
+		var gameLibTypes = MyGameLibrary.GetLibraryTypes();
+
+		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
+		{
+			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
+			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			{
+				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				expect(_currentTestObject.GetProperty(newPropertyString)).toEqual(2);
+			}
+		}
+
+	})
+	it("If a message is sent to a library type that doesn't exist, throw an error", function (){
+
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'command':'set',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+			'receiver':{
+				'objectLibraries':['type that doesn\'t exist']
+			}
+		}
+
+		var _testSendMessageToLibraryThatDoesntExist = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageToLibraryThatDoesntExist).toThrow('Library Type ' + 'type that doesn\'t exist' + ' does not exist');	
 	})
 })

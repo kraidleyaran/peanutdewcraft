@@ -339,6 +339,7 @@ function GameManager(){
 				function NewGameObject()
 				{
 					var props = {}
+					props['_masterGameObject'] = this;
 					var that = this;
 					var objectLabel = inputParams.objectLabel || null;
 					var _typeName = inputParams.typeName;
@@ -406,12 +407,12 @@ function GameManager(){
 							
 						}
 						
-						else if (propExistInProto == false)
+						else if (propExistInProto == false && currentParamPropObj.propName != '_masterGameObject')
 						{
 							throw currentParamPropObj.propName + " does not exist in GameObject Type " + inputParams.typeName;
 							return 
 						}
-						else if (propExistInProps == true)
+						else if (propExistInProps == true && currentParamPropObj.propName != '_masterGameObject')
 						{
 							throw currentParamPropObj.propName + " already exists in input gameObject. Check property names and try again."
 							return;
@@ -697,7 +698,12 @@ function GameManager(){
 									if (doesInputPropExist == true)
 									{
 										var objProp = props[currentPropName]
-										objProp(currentValue);	
+										if (typeof objProp == 'function')
+										{
+											var objFunction = objProp()
+											var runFunction = objFunction.bind(props)
+											runFunction(currentValue);			
+										}
 									}
 									break;
 								case 'remove':

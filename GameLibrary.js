@@ -245,6 +245,7 @@ function GameLibrary()
 							this.objList[inputObject.typeName] = [] 							
 						}
 						this.objList[inputObject.typeName].push(inputObject)
+						
 						var inputObjectLabel = inputObject.GetLabel();
 						if (inputObjectLabel != null)
 						{
