@@ -27,6 +27,8 @@ function GameManager(){
 
 	this.DoesGameObjectTypeExist = DoesGameObjectTypeExist;
 
+	this.CreateProtoFromGameObject = CreateProtoFromGameObject;
+
 	theGameManager.GetValidDataTypes = GetValidDataTypes;
 
 	var _objTypes = ['string','number','boolean','array','object','function', 'null']
@@ -56,27 +58,21 @@ function GameManager(){
 
 		return response;
 	}
-	/*When creating a new GameObject type, you must include the following in objParams:
-		objsParams.typeName = the prototypes gameObject type. This is used to group objects together for updating or broadcasting changes.
-		objsParams.props[] = an array with objects that contain the following two properties: (where i = property name)
-			props[i].required = a boolean indicating whether or not the property in question will be required for an object when making new instances of it 
-			props[i].dataValue = one of the _objTypes listed above as a private variable. Ctrl+F that shit.
-
+	/*
 			example:
-				var newPropName = 'health'
 				var objParams = {
 					'typeName': 'gameObject prototype name'
 					'props': []
 				}
 			
-				props[0] = {
+				objParams.props[0] = {
 					'propsName' = name of property
-					'required' = boolean indicating whether or not the object is required
+					'required' = boolean indicating whether or not a value is required when creating a gameObject of this type
 					'dataValue' = type of data the property will be set to
 					'defaultPropValue' = the default value that will be set if nothing is sent during creation. This does not affect properties that are 'required.'
 				}
 				
-
+			CreateGameObjectType[objParamArray]
 
 		Please note that an object cannot contain typename or any variation there of as a property name unless another word is before, between, or after type and name. That includes any symbol attached to typeName
 		*/
@@ -502,6 +498,11 @@ function GameManager(){
 							if (protoPropType == currentPropType)
 							{
 								//props[currentParamPropObj.propName] = currentParamPropObj.propValue
+								
+								if (!currentParamPropObj.propValue && protoProps[currentParamPropObj].required != true)
+								{
+									currentParamPropsObj.propValue = protoProps[currentParamPropObj.propName].defaultPropValue;
+								}
 								_addPropsArray.push(currentParamPropObj)
 							}
 							else
@@ -510,8 +511,7 @@ function GameManager(){
 								return;
 							}
 							
-						}
-						
+						}					
 						else if (propExistInProto == false && currentParamPropObj.propName != '_masterGameObject')
 						{
 							throw currentParamPropObj.propName + " does not exist in GameObject Type " + inputParams.typeName;
@@ -539,7 +539,7 @@ function GameManager(){
 
 							var _doesCurrentPropExistInInput = props.hasOwnProperty(_currentProtoPropString)
 
-							if (_doesCurrentPropExistInInput == false && _currentProtoProp.required == true && _currentProtoProp != 'typeName')
+							if (_doesCurrentPropExistInInput == false && _currentProtoProp.required == true && !props[_currentProtoPropString])
 							{
 								returnArray.push(_currentProtoPropString)
 							}
@@ -1116,6 +1116,60 @@ function GameManager(){
 
 		var returnArray = CreateGameObject(objParamsArray)
 		return returnArray;
+	}
+
+	function CreateProtoFromGameObject(paramsObj)
+	{
+		var protoNameExist = DoesGameObjectTypeExist(paramsObj.typeName)
+		if (!paramsObj.typeName)
+		{
+			throw 'typeName required for new GameObject prototype'
+			return;
+		}
+		if (protoNameExist == true)
+		{
+			throw "GameObject prototype name " + paramsObj.typeName + " already exists."
+			return;
+		}
+		if (!paramsObj.gameObject)
+		{
+			throw "GameObject required for new GameObject prototype"
+			return;
+		}
+		var currentObj = paramsObj.gameObject;
+		var objProps = currentObj.GetAllProperties();
+		var objKeys = Object.keys(objProps)
+		var newProtoProps = [];
+		/*
+		props[0] = {
+					'propsName' = name of property
+					'required' = boolean indicating whether or not the object is required
+					'dataValue' = type of data the property will be set to
+					'defaultPropValue' = the default value that will be set if nothing is sent during creation. This does not affect properties that are 'required.'
+				}
+		*/
+		for (iiObjProp = 0; iiObjProp < objKeys.length; iiObjProp++)
+		{
+			if (objKeys[iiObjProp] == '_masterGameObject')
+			{
+				continue;
+			}
+			var valueType = typeof objProps[objKeys[iiObjProp]];
+			var propsObj = {
+				'propName': objKeys[iiObjProp],
+				'required': true,
+				'dataValue': valueType,
+				'defaultPropValue': objProps[objKeys[iiObjProp]]
+			}
+			newProtoProps.push(propsObj)
+		}
+		var newGameObjectProto = {
+			'typeName': paramsObj.typeName,
+			'props':newProtoProps
+		}
+		var returnObjectTypeArray = CreateGameObjectType([newGameObjectProto]);
+		currentObj.SetType(paramsObj.typeName)
+		return returnObjectTypeArray[0];
 	}
 
 	function GetGameObjectTypes()

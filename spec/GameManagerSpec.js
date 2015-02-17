@@ -751,7 +751,101 @@ describe("GameManager", function() {
 
 
 		})
+		it("Given an exisiting GameObject with new properties added after it's creation, a new protoType should be able to be created from that gameObject", function(){
+			var newGamePiece = {
+				'typeName': 'gamePiece',
+				'objectLabel': '',
+				'props': [newGamePiece_prop_test]
+			}
+			var _gamePieceArray = []
+			_gamePieceArray.push(newGamePiece)
 
+			var newGamePiece_ObjectArray = MyGameManager.CreateGameObject(_gamePieceArray);
+			var newGamePiece_Object = newGamePiece_ObjectArray[0];
+			var newerProp = {
+				'propName': 'newer property',
+				'propValue': 0
+			}
+
+			newGamePiece_Object.AddProperty([newerProp])
+
+			var newProtoFromGameObjectParams = {
+				'typeName': 'even newer gamePiece',
+				'gameObject': newGamePiece_Object
+			}
+			var _testCreateProtoFromGameObject_NoError = function()
+			{
+				MyGameManager.CreateProtoFromGameObject(newProtoFromGameObjectParams);	
+			}	
+			expect(_testCreateProtoFromGameObject_NoError).not.toThrow();
+
+			var gameProtos = MyGameManager.GetGameObjectProtos();
+			var protoKeys = Object.keys(gameProtos);
+			expect(protoKeys.indexOf(newProtoFromGameObjectParams.typeName)).not.toBeLessThan(0);
+
+			var newerProto = gameProtos[newProtoFromGameObjectParams.typeName];
+			var newerProtoProps = newerProto.GetProps();
+
+			var newerProtoPropKeys = Object.keys(newerProtoProps)
+
+			expect(newerProtoPropKeys.indexOf(newerProp.propName)).not.toBeLessThan(0);
+
+		})
+		it("When a prototype is created from a gameObject, the gameObject's typeName should change to the new proto", function(){
+			var newGamePiece = {
+				'typeName': 'gamePiece',
+				'objectLabel': '',
+				'props': [newGamePiece_prop_test]
+			}
+			var _gamePieceArray = []
+			_gamePieceArray.push(newGamePiece)
+
+			var newGamePiece_ObjectArray = MyGameManager.CreateGameObject(_gamePieceArray);
+			var newGamePiece_Object = newGamePiece_ObjectArray[0];
+			var newerProp = {
+				'propName': 'newer property',
+				'propValue': 0
+			}
+
+			var newProtoFromGameObjectParams = {
+				'typeName': 'even newer gamePiece',
+				'gameObject': newGamePiece_Object
+			}
+			MyGameManager.CreateProtoFromGameObject(newProtoFromGameObjectParams);	
+
+			expect(newGamePiece_Object.GetType()).toEqual(newProtoFromGameObjectParams.typeName)
+		})
+		it("Given a prototype created from a gameObject, another gameObject should be able to be made from the new prototype", function (){
+			var newGamePiece = {
+				'typeName': 'gamePiece',
+				'objectLabel': '',
+				'props': [newGamePiece_prop_test]
+			}
+			var _gamePieceArray = []
+			_gamePieceArray.push(newGamePiece)
+
+			var newGamePiece_ObjectArray = MyGameManager.CreateGameObject(_gamePieceArray);
+			var newGamePiece_Object = newGamePiece_ObjectArray[0];
+
+			var newProtoFromGameObjectParams = {
+				'typeName': 'even newer gamePiece',
+				'gameObject': newGamePiece_Object
+			}
+
+			MyGameManager.CreateProtoFromGameObject(newProtoFromGameObjectParams);	
+
+			var newerGamePiece = {
+				'typeName': newProtoFromGameObjectParams.typeName,
+				'objectLabel':'',
+				'props': [newGamePiece_prop_test]
+			}
+			var _testCreateGameObjectFromProtoTypeFromGameObject_NoError = function()
+			{
+				MyGameManager.CreateGameObject([newerGamePiece])
+			}
+			expect(_testCreateGameObjectFromProtoTypeFromGameObject_NoError).not.toThrow();
+
+		})
 		it("Given that a gameObject created from a gameObject prototype with a certain property exists, that property's value should be obtainable", function(){	
 
 			var newGamePiece = {
