@@ -118,6 +118,7 @@ describe("GameManager", function() {
 		_typeArray.push(gamePieceProto)
 
 		var newProtoStringArray = MyGameManager.CreateGameObjectType(_typeArray);
+
 		var newProtoString = newProtoStringArray[0]
 
 		var _currentObjProtos = MyGameManager.GetGameObjectProtos();

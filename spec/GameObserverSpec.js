@@ -42,10 +42,8 @@ describe("GameObserver", function (){
 		}
 
 		_newTypeArray = [];
-		_newTypeArray.push(gamePieceProto)			
-
+		_newTypeArray.push(gamePieceProto)		
 		newProtoStringArray = MyGameManager.CreateGameObjectType(_newTypeArray);
-
 		newProtoString = newProtoStringArray[0]
 
 		newGamePiece_prop_test = {
@@ -77,7 +75,17 @@ describe("GameObserver", function (){
 		_gamePieceLib = _gameLibs[gamePieceLibString];
 		_gamePieceLib.AddToLibrary(_addGameObjectsArray)
 	})
+	it("When the GameObserver is instantiated, gameObject prototypes should contain a reference to that GameObserver", function(){
+		var gameObjectProtos = MyGameManager.GetGameObjectProtos();
+		var protoKeys = Object.keys(gameObjectProtos);
+		var gameObjectTypes = MyGameManager.GetGameObjectTypes();
 
+		for (iiProto = 0; iiProto < protoKeys.length; iiProto++)
+		{
+			var currentProto = gameObjectProtos[protoKeys[iiProto]];
+			expect(currentProto.GetObserver()).toEqual(MyGameObserver);
+		}
+	})
 	it("GameObjects in any gameLibrary should be able to receive a message", function(){
 		var messageArray = [];
 
@@ -543,10 +551,232 @@ describe("GameObserver", function (){
 			}
 		}
 
-		var _testSendMessageToLibraryThatDoesntExist = function()
+		var _testSendMessageToLibraryThatDoesntExist_ToThrow = function()
 		{
 			MyGameObserver.SendMessage(messageObject)
 		}
-		expect(_testSendMessageToLibraryThatDoesntExist).toThrow('Library Type ' + 'type that doesn\'t exist' + ' does not exist');	
+		expect(_testSendMessageToLibraryThatDoesntExist_ToThrow).toThrow('Library Type ' + 'type that doesn\'t exist' + ' does not exist');	
 	})
+	it("If a message is sent to a gameObject type that doesn't exist, an error should not be thrown", function (){
+		
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'command':'set',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+			'receiver':{
+				'gameObjectTypes':['type that doesn\'t exist']
+			}
+		}
+
+		var _testSendMessageToGameObjectTypeThatDoesntExist_NoError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageToGameObjectTypeThatDoesntExist_NoError).not.toThrow();
+
+	})
+	it("If a message is sent to an objectLabel that doesn't exist, an error should not be thrown", function (){
+
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'command':'set',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+			'receiver':{
+				'objectLabels':['type that doesn\'t exist']
+			}
+		}
+		MyGameObserver.SendMessage(messageObject)
+		var _testSendMessageToObjectLabelThatDoesntExist_NoError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageToObjectLabelThatDoesntExist_NoError).not.toThrow();
+	})
+	it("If a message is sent without a peer, throw an error",function(){
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'propertyName':'test',
+			'command':'set',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var _testSendMessageWithoutPeer_ThrowError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageWithoutPeer_ThrowError).toThrow('Peer is invalid.');
+	})
+	it("If a message is sent without a propertyName, throw an error", function(){
+		
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'command':'set',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var _testSendMessageWithoutpropertyName_ThrowError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageWithoutpropertyName_ThrowError).toThrow('No propertyName in message');		
+	})
+	it("If a message is sent without a command, throw an error", function(){
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'commandValue': false
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var _testSendMessageWithoutcommand_ThrowError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageWithoutcommand_ThrowError).toThrow('No command in message');		
+	})
+	it("If a message meant to add a property's value does not contain a commandValue property, throw an error", function(){
+		var messageArray = [];
+
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'command':'add'
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var _testSendMessageIntendedToSetProperty_WithoutcommandValue_ThrowError = function()
+		{
+			MyGameObserver.SendMessage(messageObject)
+		}
+		expect(_testSendMessageIntendedToSetProperty_WithoutcommandValue_ThrowError).toThrow('commandValue required when adding to a property\'s value');		
+	})
+	describe(" -> GameObject Prototype changes propagate to GameObjects", function(){
+		it("When a gameObject Prototype adds a property, GameObjects of that prototype should also change accordingly", function (){
+
+			var gameObjectProtos = MyGameManager.GetGameObjectProtos();
+			var testObjectProto = gameObjectProtos[gamePieceProto.typeName]
+
+			var newProtoProp =	{
+				'propName':'new property',
+				'required': false,
+				'dataValue': 'boolean',
+				'defaultPropValue': true
+			};
+			testObjectProto.AddProps([newProtoProp])
+
+			var gameLibTypes = MyGameLibrary.GetLibraryTypes();
+
+			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
+			{
+				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
+				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				{
+					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					expect(_currentTestObject.GetProperty(newProtoProp.propName)).toEqual(true);
+				}
+			}	
+		})
+		it("When a gameObject Prototype sets a property, GameObjects of that prototype should also change accordingly", function(){
+
+			var gameObjectProtos = MyGameManager.GetGameObjectProtos();
+			var testObjectProto = gameObjectProtos[gamePieceProto.typeName]
+
+			var newProtoProp =	{
+				'propName':'test',
+				'required': false,
+				'dataValue': 'number',
+				'defaultPropValue': 0
+			};
+			testObjectProto.SetProps([newProtoProp])
+
+			var gameLibTypes = MyGameLibrary.GetLibraryTypes();
+
+			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
+			{
+				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
+				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				{
+					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					expect(_currentTestObject.GetProperty('test')).toEqual(0);
+				}
+			}			
+		})
+		it("When a gameObject prototype removes a property, GameObjects of that prototype should also change accordingly", function (){
+			var gameObjectProtos = MyGameManager.GetGameObjectProtos();
+			var testObjectProto = gameObjectProtos[gamePieceProto.typeName]
+
+
+			testObjectProto.RemoveProps(['test'])
+
+			var gameLibTypes = MyGameLibrary.GetLibraryTypes();
+
+			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
+			{
+				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
+				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				{
+					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					var _testGetPropertyAfterMessageFromProtoRemoved_ThrowError = function()
+					{
+						_currentTestObject.GetProperty('test')	
+					}
+					expect(_testGetPropertyAfterMessageFromProtoRemoved_ThrowError).toThrow("Property " + 'test' + " does not exist in object");
+				}
+			}
+
+		})
+		it("When a gameObject prototype changes it's name, GameObjects of that prototype should also change their typeNames accordingly", function (){
+			var gameObjectProtos = MyGameManager.GetGameObjectProtos();
+			var testObjectProto = gameObjectProtos[gamePieceProto.typeName]
+			var newTypeNameString = 'new gameObject type name'
+			
+			testObjectProto.SetTypeName(newTypeNameString)
+			
+			var gameLibTypes = MyGameLibrary.GetLibraryTypes();
+
+			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
+			{
+				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
+				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				{
+					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					expect(_currentTestObject.GetType()).toEqual(newTypeNameString)
+				}
+			}	
+		})
+	})
+
 })

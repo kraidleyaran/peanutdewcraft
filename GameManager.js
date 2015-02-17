@@ -1,12 +1,6 @@
 function GameManager(){
 
-	var _gameObjectProtos = {};
-
-	Object.defineProperty(_gameObjectProtos, 'orphan', {
-		'value': null,
-		'writable': false
-	})
-	
+	var _gameObjectProtos = {};	
 
 	var _gameObserver = null;
 
@@ -100,7 +94,6 @@ function GameManager(){
 			}
 			var doesObjTypeExist = DoesGameObjectTypeExist(paramsTypeName);
 
-			var newObjProtoType = {};
 			if (doesObjTypeExist == false)
 			{
 				function newObjectProto ()
@@ -109,13 +102,32 @@ function GameManager(){
 					var _protoGameManager = theGameManager;
 					var _typeName;
 					var _props = {}
+					var _protoObserver = _gameObserver || {
+						'SendMessage':function()
+						{
+							return;
+						}
+					};
 
-					this.GetProps = function()
+					this.GetProps = GetProps;
+					this.AddProps = AddProps;
+					this.SetProps = SetProps;
+					this.RemoveProps = RemoveProps;
+
+					this.GetTypeName = GetTypeName;
+					this.SetTypeName = SetTypeName;
+
+					this.SetObserver = SetObserver;
+					this.GetObserver = GetObserver;
+
+					function GetProps()
 					{
 						return _props;
 					}
-					this.AddProps = function(propArray)
+					function AddProps(propArray)
 					{
+						var _addPropsToChildObjectsMessage = [];
+
 						for (iiPropItem = 0; iiPropItem < propArray.length; iiPropItem++)
 						{
 							var checkTypeNameString = "typeName"
@@ -150,11 +162,29 @@ function GameManager(){
 									'defaultPropValue': currentProp.defaultPropValue,
 									'required': currentProp.required
 								}
-							}							
+								var newMessage = {
+									'peer':'property',
+									'propertyName': currentProp.propName,
+									'command':'add',
+									'commandValue': currentProp.defaultPropValue
+								}
+								_addPropsToChildObjectsMessage.push(newMessage)
+
+							}
+
 						}
+
+						var messageObject = {
+							'message':_addPropsToChildObjectsMessage,
+							'receiver':{
+								'gameObjectTypes':[_typeName]
+							}
+						}
+						_protoObserver.SendMessage(messageObject)
 					}
-					this.SetProps = function(propArray)
+					function SetProps(propArray)
 					{	
+						var _addPropsToChildObjectsMessage = [];
 						for (iiPropItem = 0; iiPropItem < propArray.length; iiPropItem++)
 						{
 							var checkTypeNameString = "typeName"
@@ -182,23 +212,91 @@ function GameManager(){
 									'defaultPropValue': currentProp.defaultPropValue,
 									'required': currentProp.required
 								}
+								var newMessage = {
+									'peer':'property',
+									'propertyName': currentProp.propName,
+									'command':'set',
+									'commandValue': currentProp.defaultPropValue
+								}
+								_addPropsToChildObjectsMessage.push(newMessage)
 							}							
 						}
+
+						var messageObject = {
+							'message':_addPropsToChildObjectsMessage,
+							'receiver':{
+								'gameObjectTypes':[_typeName]
+							}
+						}
+						_protoObserver.SendMessage(messageObject)
 					}
-					this.GetTypeName = function()
+					function RemoveProps(propStringArray)
+					{
+						var _removePropsFromChildObjectsMessage = [];
+						var _propKeys = Object.keys(_props);
+						for (iiPropString = 0; iiPropString < propStringArray.length; iiPropString++)
+						{
+							var currentPropString = propStringArray[iiPropString];
+							var propStringIndex = _propKeys.indexOf(currentPropString)
+							if (propStringIndex < 0)
+							{
+								throw "Property does not exist on GameObject Prototype " + _typeName;
+								return;
+							}
+							delete _props[currentPropString];
+							var newMessage = {
+								'peer':'property',
+								'propertyName': currentPropString,
+								'command':'remove'
+							}
+							_removePropsFromChildObjectsMessage.push(newMessage);
+						}
+						var messageObject = {
+							'message': _removePropsFromChildObjectsMessage,
+							'receiver':{
+								'gameObjectTypes':[_typeName]
+							}
+						}
+						_protoObserver.SendMessage(messageObject)
+					}
+					function GetTypeName()
 					{
 						return _typeName;
 					}
-					this.SetTypeName = function(inputTypeNameString)
+					function SetTypeName(inputTypeNameString)
 					{
-						var _typeNameExist = _protoGameManager.DoesGameObjectTypeExist(paramsTypeName)
+						var _typeNameExist = _protoGameManager.DoesGameObjectTypeExist(inputTypeNameString)
 						if (_typeNameExist == false)
 						{
-							var currentTypeName = _typeName;
-							_protoObjs[currentTypeName] = null,
+							var currentTypeName = GetTypeName();
+							var _currentTypeNameExist = _protoGameManager.DoesGameObjectTypeExist(currentTypeName);
+							if (_currentTypeNameExist == true)
+							{											
+								delete _protoObjs[_typeName];
+								_typeName = inputTypeNameString;	
+								_protoObjs[inputTypeNameString] = this;
 
-							_typeName = inputTypeNameString;
-							_protoObjs[inputTypeNameString] = this;
+								var messageArray = []
+								messageArray[0] = {
+									'peer':'typeName',
+									'command':'set',
+									'commandValue':inputTypeNameString
+								}
+
+								var messageObject = {
+									'message':messageArray,
+									'receiver':{
+										'gameObjectTypes': [currentTypeName]
+									}
+								}
+								_protoObserver.SendMessage(messageObject)
+							}
+							else
+							{
+								_typeName = inputTypeNameString;	
+								_protoObjs[inputTypeNameString] = this;
+							}
+
 						}
 						else if (!inputTypeNameString || inputTypeNameString.length == 0)
 						{
@@ -212,12 +310,19 @@ function GameManager(){
 						}
 						
 					}
-
-
+					function SetObserver(inputGameObserver)
+					{
+						_protoObserver = inputGameObserver;
+					}
+					function GetObserver()
+					{
+						return _protoObserver;
+					}
 					this.SetTypeName(objParams.typeName);
 					this.AddProps(objParams.props);
 
 				}
+				
 				var newObjProto = new newObjectProto();
 				_gameObjectProtos[paramsTypeName] = newObjProto;
 				returnObjTypeNames.push(paramsTypeName)
@@ -512,7 +617,7 @@ function GameManager(){
 						var typeNameExist = _gameManager.DoesGameObjectTypeExist(newTypeNameString)
 						if (typeNameExist == true)
 						{
-							_typeName = newTypeNameString	
+							_typeName = newTypeNameString;
 						}
 						else
 						{
@@ -638,27 +743,33 @@ function GameManager(){
 							message.propertyName;
 					*/
 					function Receive(messageArray)
-					{
+					{	
+						var _otherPeerTypes = ['typeName', 'proto', 'objectLabel']
+
 						for (iiMessage = 0; iiMessage < messageArray.length; iiMessage++)
 						{
 							var currentMessage = messageArray[iiMessage];
+
 							var currentPropName = currentMessage.propertyName;
 							var currentValue = currentMessage.commandValue;
 							var currentCommand = currentMessage.command;
+
 							var currentPeer = currentMessage.peer;
-							if (!currentPeer || currentPeer != 'property' && currentPeer != 'value')
+							var otherPeerTypeIndex = _otherPeerTypes.indexOf(currentPeer)
+
+							if (!currentPeer || currentPeer != 'property' && currentPeer != 'value' && otherPeerTypeIndex < 0)
 							{
 								throw 'Peer is invalid.'
 								return;
 							}
-							if (!currentPropName)
+							if (!currentPropName && otherPeerTypeIndex < 0)
 							{
 								throw 'No propertyName in message'
 								return;
 							}
 							if (!currentCommand)
 							{
-								throw 'No currentCommand in message'
+								throw 'No command in message'
 								return;
 							}
 							var doesInputPropExist = DoesPropExist(currentPropName)
@@ -673,7 +784,7 @@ function GameManager(){
 											{
 												var newObjProp = {
 													'propName':currentPropName,
-													'propValue': currentValue
+													'propValue': currentValue || null
 												}
 												that.AddProperty([newObjProp])	
 											}
@@ -681,7 +792,15 @@ function GameManager(){
 										case 'value':
 											if (doesInputPropExist == true)
 											{
-												props[currentPropName] += currentValue;	
+												if (currentValue)
+												{
+													props[currentPropName] += currentValue;		
+												}
+												else
+												{
+													throw 'commandValue required when adding to a property\'s value'
+													return;
+												}
 											}
 											break;
 										default:
@@ -691,7 +810,27 @@ function GameManager(){
 								case 'set':
 									if (doesInputPropExist == true)
 									{
-										that.SetProperty(currentPropName, currentValue)	
+										if (otherPeerTypeIndex < 0)
+										{
+											that.SetProperty(currentPropName, currentValue)			
+										}
+									}
+									else if (otherPeerTypeIndex > -1)
+									{
+										switch (currentPeer)
+										{
+											case 'typeName':
+												that.SetType(currentValue)
+												break;
+											case 'proto':
+												that.SetObjectProto(currentValue)
+												break;
+											case 'objectLabel':
+												that.SetLabel(currentValue)
+												break;
+											default:
+												break;
+										}
 									}
 									break;
 								case 'execute':
@@ -838,7 +977,7 @@ function GameManager(){
 		}
 		else
 		{
-			throw inputParams.typeName + "is not a current gameObject type"
+			throw inputParams.typeName + " is not a current gameObject type"
 		}
 
 		return returnTypeSet;
@@ -984,7 +1123,7 @@ function GameManager(){
 		var response;
 
 		var objTypes = Object.keys(_gameObjectProtos)
-		if (objTypes.length > 0 )
+		if (objTypes.length > 0)
 		{
 			response = objTypes;
 		}
@@ -1033,6 +1172,12 @@ function GameManager(){
 		if (!_gameObserver)
 		{
 			_gameObserver = gameObserver
+			var protoKeys = Object.keys(_gameObjectProtos)
+			for (iiProto = 0; iiProto < protoKeys.length; iiProto++)
+			{
+				var currentProto = _gameObjectProtos[protoKeys[iiProto]]
+				currentProto.SetObserver(gameObserver);
+			}
 		}
 		else
 		{

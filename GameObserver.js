@@ -191,7 +191,12 @@ function GameObserver(_gameLibrary, _gameManager)
 						{
 							continue;
 						}
-						
+						var objLibLabels = Object.keys(currentLib.objLabelList);
+						var objLabelIndex = objLibLabels.indexOf(currentObjLabel);
+						if (objLabelIndex < 0)
+						{
+							continue;
+						}
 						var currentObjLabelList = currentLib.objLabelList[currentObjLabel]
 
 						for (iiObj = 0; iiObj < currentObjLabelList.length; iiObj++)
