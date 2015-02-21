@@ -79,7 +79,8 @@ function GameManager(){
 	function CreateGameObjectType(objParamArray)
 	{
 		var returnObjTypeNames = [];
-		for (iiObjParam = 0; iiObjParam < objParamArray.length; iiObjParam++)
+		var objParamArrayLength = objParamArray.length
+		for (iiObjParam = 0; iiObjParam < objParamArrayLength; iiObjParam++)
 		{
 			var objParams = objParamArray[iiObjParam]
 			var paramsTypeName = objParams.typeName;
@@ -123,8 +124,9 @@ function GameManager(){
 					function AddProps(propArray)
 					{
 						var _addPropsToChildObjectsMessage = [];
+						var propArrayLength = propArray.length;
 
-						for (iiPropItem = 0; iiPropItem < propArray.length; iiPropItem++)
+						for (iiPropItem = 0; iiPropItem < propArrayLength; iiPropItem++)
 						{
 							var checkTypeNameString = "typeName"
 							var cleanTypeNameString = purifyString(checkTypeNameString);
@@ -181,7 +183,8 @@ function GameManager(){
 					function SetProps(propArray)
 					{	
 						var _addPropsToChildObjectsMessage = [];
-						for (iiPropItem = 0; iiPropItem < propArray.length; iiPropItem++)
+						var propArrayLength = propArray.length
+						for (iiPropItem = 0; iiPropItem < propArrayLength; iiPropItem++)
 						{
 							var checkTypeNameString = "typeName"
 							var cleanTypeNameString = purifyString(checkTypeNameString);
@@ -230,7 +233,8 @@ function GameManager(){
 					{
 						var _removePropsFromChildObjectsMessage = [];
 						var _propKeys = Object.keys(_props);
-						for (iiPropString = 0; iiPropString < propStringArray.length; iiPropString++)
+						var propStringArrayLength = propStringArray.length;
+						for (iiPropString = 0; iiPropString < propStringArrayLength; iiPropString++)
 						{
 							var currentPropString = propStringArray[iiPropString];
 							var propStringIndex = _propKeys.indexOf(currentPropString)
@@ -367,8 +371,8 @@ function GameManager(){
 			var modelProtoProps_Strings = Object.keys(modelProto_props)
 
 			var modelProtoProps_Array = []
-
-			for (iiProp = 0; iiProp < modelProtoProps_Strings.length; iiProp++)
+			var modelProtoPropStringArrayLength = modelProtoProps_Strings.length;
+			for (iiProp = 0; iiProp < modelProtoPropStringArrayLength; iiProp++)
 			{
 				var currentModelProp = modelProto_props[modelProtoProps_Strings[iiProp]]
 				currentModelProp.propName = modelProtoProps_Strings[iiProp]
@@ -423,7 +427,8 @@ function GameManager(){
 	function CreateGameObject(inputParamArray)
 	{
 		var returnObjArray = [];
-		for (iiInputParam = 0; iiInputParam < inputParamArray.length; iiInputParam++)
+		var inputParamArrayLength = inputParamArray.length;
+		for (iiInputParam = 0; iiInputParam < inputParamArrayLength; iiInputParam++)
 		{
 			var inputParams = inputParamArray[iiInputParam];
 
@@ -484,7 +489,8 @@ function GameManager(){
 
 					var _addPropsArray = []
 
-					for (iiProp = 0; iiProp < inputParamsProps.length; iiProp++)
+					var _inputParamsPropsLength = inputParamsProps.length;
+					for (iiProp = 0; iiProp < _inputParamsPropsLength; iiProp++)
 					{
 						var currentParamPropObj = inputParamsProps[iiProp];
 						var propExistInProto = DoesPropExistInProto(currentParamPropObj.propName, inputParams.typeName)
@@ -531,8 +537,8 @@ function GameManager(){
 					{
 						var returnArray = [];
 						var _propsInProto = Object.keys(protoProps)
-
-						for (iiProtoProp = 0; iiProtoProp < _propsInProto.length; iiProtoProp++)
+						var _propsInProtoLength = _propsInProto.length
+						for (iiProtoProp = 0; iiProtoProp < _propsInProtoLength; iiProtoProp++)
 						{
 							var _currentProtoPropString = _propsInProto[iiProtoProp]
 							var _currentProtoProp = protoProps[_currentProtoPropString]
@@ -638,7 +644,8 @@ function GameManager(){
 
 					function AddProp (inputPropArray)
 					{
-						for (iiNewProp = 0; iiNewProp < inputPropArray.length; iiNewProp++)
+						var _inputPropArrayLength = inputPropArray.length
+						for (iiNewProp = 0; iiNewProp < _inputPropArrayLength; iiNewProp++)
 						{
 							var currentPropObj = inputPropArray[iiNewProp];
 
@@ -744,9 +751,10 @@ function GameManager(){
 					*/
 					function Receive(messageArray)
 					{	
+						var returnValue;
 						var _otherPeerTypes = ['typeName', 'proto', 'objectLabel']
-
-						for (iiMessage = 0; iiMessage < messageArray.length; iiMessage++)
+						var messageArrayLength = messageArray.length
+						for (iiMessage = 0; iiMessage < messageArrayLength; iiMessage++)
 						{
 							var currentMessage = messageArray[iiMessage];
 
@@ -807,6 +815,15 @@ function GameManager(){
 											break;
 									}
 									break;
+								case 'get':
+									if (doesInputPropExist == true)
+									{
+										returnValue = that.GetProperty(currentPropName);
+									}
+									else
+									{
+										returnValue = null;
+									}
 								case 'set':
 									if (doesInputPropExist == true)
 									{
@@ -857,51 +874,52 @@ function GameManager(){
 									break;
 								default:
 									break;
-								}
 							}
 						}
-						return this;
+						return returnValue;
 					}
-					var newGameObject = new NewGameObject();
-					
-					NewGameObject.prototype.SetProperty = function(inputProp, inputKeyValue)
-					{
-						this.SetProperty(inputProp, inputKeyValue);
-					}
-					NewGameObject.prototype.GetProperty = function(inputProp)
-					{
-						var response = this.GetProperty(inputProp);
-						return response;
-					}
-					NewGameObject.prototype.DoesPropExist = function(inputPropString)
-					{
-						var response = this.DoesPropExist(inputPropString);
-						return respsonse;
-					}
-					NewGameObject.prototype.GetType = function()
-					{
-						var response = this.GetType();
-						return response;
-					}
-					NewGameObject.prototype.DeleteProperty = function(inputPropString)
-					{
-						var response = this.DeleteProp(inputPropString);
-						return response;
-					}
-					NewGameObject.prototype.GetAllProperties = function()
-					{
-						var response = this.GetAllProperties();
-						return response;
-					}
-					
-					newObjProtoType = newGameObject;
-					returnObjArray.push(newGameObject);
-				}
-				else
+					return this;
+				}	
+				var newGameObject = new NewGameObject();
+				
+				NewGameObject.prototype.SetProperty = function(inputProp, inputKeyValue)
 				{
-					var _objectTypes = Object.keys(_gameObjectProtos);
-					throw "gameObject type " + inputParams.typeName + " does not exist in prototype list " + _objectTypes;
+					this.SetProperty(inputProp, inputKeyValue);
 				}
+				NewGameObject.prototype.GetProperty = function(inputProp)
+				{
+					var response = this.GetProperty(inputProp);
+					return response;
+				}
+				NewGameObject.prototype.DoesPropExist = function(inputPropString)
+				{
+					var response = this.DoesPropExist(inputPropString);
+					return respsonse;
+				}
+				NewGameObject.prototype.GetType = function()
+				{
+					var response = this.GetType();
+					return response;
+				}
+				NewGameObject.prototype.DeleteProperty = function(inputPropString)
+				{
+					var response = this.DeleteProp(inputPropString);
+					return response;
+				}
+				NewGameObject.prototype.GetAllProperties = function()
+				{
+					var response = this.GetAllProperties();
+					return response;
+				}
+				
+				newObjProtoType = newGameObject;
+				returnObjArray.push(newGameObject);
+			}
+			else
+			{
+				var _objectTypes = Object.keys(_gameObjectProtos);
+				throw "gameObject type " + inputParams.typeName + " does not exist in prototype list " + _objectTypes;
+			}
 		}
 		return returnObjArray;	
 	}
@@ -1227,7 +1245,8 @@ function GameManager(){
 		{
 			_gameObserver = gameObserver
 			var protoKeys = Object.keys(_gameObjectProtos)
-			for (iiProto = 0; iiProto < protoKeys.length; iiProto++)
+			var protoKeysLength = protoKeys.length
+			for (iiProto = 0; iiProto < protoKeysLength; iiProto++)
 			{
 				var currentProto = _gameObjectProtos[protoKeys[iiProto]]
 				currentProto.SetObserver(gameObserver);

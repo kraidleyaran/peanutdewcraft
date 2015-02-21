@@ -18,7 +18,8 @@ var mainGame = (function () {
 	({
 		graphicsDevice: graphicsDevice
 	})
-
+	var _frames = 60;
+	var _perMs = 1000;
 
 	function update()
 	{
@@ -34,7 +35,7 @@ var mainGame = (function () {
 			graphicsDevice.endFrame();
 		}
 	}
-	TurbulenzEngine.setInterval(update, 1000 / 60)
+	TurbulenzEngine.setInterval(update, _perMs / _frames)
 })
 
 function purifyString(inputString)

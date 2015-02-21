@@ -42,7 +42,7 @@ describe("GameObserver", function (){
 		}
 
 		_newTypeArray = [];
-		_newTypeArray.push(gamePieceProto)		
+		_newTypeArray.push(gamePieceProto);	
 		newProtoStringArray = MyGameManager.CreateGameObjectType(_newTypeArray);
 		newProtoString = newProtoStringArray[0]
 
@@ -247,6 +247,95 @@ describe("GameObserver", function (){
 				expect(_currentTestObject.GetProperty('test')).toEqual(true);
 			}
 		}
+	})
+	it("GameObjects in any gameLibrary should return the values of their properties when using the Get command", function(){
+		var _propArray = [];
+		_propArray.push(gamePiece_prop_test);
+
+		var newGamePieceProto = {
+			'typeName': gamePieceProto.typeName + 1,
+			'modelProto': gamePieceProto.typeName,
+			'props': []
+		}
+
+
+		var _newTypeArray = [];
+		_newTypeArray.push(newGamePieceProto)
+		MyGameManager.CreateProtoFromExisting(_newTypeArray)
+
+		var awesomeGamePiece = {
+			'typeName': gamePieceProto.typeName + 1,
+			'objectLabel': '',
+			'props': [newGamePiece_prop_test]
+		}
+
+		var awesomeGameObjectArray = MyGameManager.CreateGameObject([awesomeGamePiece])
+		_gamePieceLib.AddToLibrary(awesomeGameObjectArray);
+
+		var messageArray = [];
+		
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'test',
+			'command':'get'
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var receivedArray = MyGameObserver.SendMessage(messageObject);
+		var receivedArrayLength = receivedArray.length;
+		for (iiResponse = 0; iiResponse < receivedArrayLength; iiResponse++)
+		{
+			var currentResponse = receivedArray[iiResponse];
+			expect(currentResponse).toEqual(true);
+		}
+	})
+	it("GameObjects in any gameLibrary should return the value of 'null' when they do not have a property requested by the GameObserver", function(){
+		var _propArray = [];
+		_propArray.push(gamePiece_prop_test);
+
+		var newGamePieceProto = {
+			'typeName': gamePieceProto.typeName + 1,
+			'modelProto': gamePieceProto.typeName,
+			'props': []
+		}
+
+
+		var _newTypeArray = [];
+		_newTypeArray.push(newGamePieceProto)
+		MyGameManager.CreateProtoFromExisting(_newTypeArray)
+
+		var awesomeGamePiece = {
+			'typeName': gamePieceProto.typeName + 1,
+			'objectLabel': '',
+			'props': [newGamePiece_prop_test]
+		}
+
+		var awesomeGameObjectArray = MyGameManager.CreateGameObject([awesomeGamePiece])
+		_gamePieceLib.AddToLibrary(awesomeGameObjectArray);
+
+		var messageArray = [];
+		
+		messageArray[0]  = {
+			'peer':'value',
+			'propertyName':'a property that does not exist',
+			'command':'get'
+		}
+
+		var messageObject = {
+			'message': messageArray,
+		}
+
+		var receivedArray = MyGameObserver.SendMessage(messageObject);
+		var receivedArrayLength = receivedArray.length;
+		for (iiResponse = 0; iiResponse < receivedArrayLength; iiResponse++)
+		{
+			var currentResponse = receivedArray[iiResponse];
+			expect(currentResponse).toEqual(null);
+		}
+
 	})
 	it("Using the 'set' command, a property's value should be set regardless of peer", function(){
 		var messageArray = [];

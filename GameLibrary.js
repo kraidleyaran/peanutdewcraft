@@ -61,7 +61,8 @@ function GameLibrary()
 	function AddToLibrary(inputParamsArray)
 	{
 		var objectArray = {};
-		for (iiParam = 0; iiParam < inputParamsArray.length; iiParam++)
+		var _inputParamsArrayLength = inputParamsArray.length
+		for (iiParam = 0; iiParam < _inputParamsArrayLength; iiParam++)
 		{
 			var currentParam = inputParamsArray[iiParam];
 
@@ -84,13 +85,12 @@ function GameLibrary()
 		}
 		var objArrayKeys = Object.keys(objectArray);
 		var currentLibArray = this.GetLibrary(objArrayKeys);
-
-		for (iiLibType = 0; iiLibType < objArrayKeys.length; iiLibType++)
+		var objArrayKeysLength = objArrayKeys.length
+		for (iiLibType = 0; iiLibType < objArrayKeysLength; iiLibType++)
 		{
 			var currentLib = currentLibArray[objArrayKeys[iiLibType]]
 			var libObjArray = objectArray[objArrayKeys[iiLibType]]
 			currentLib.AddToLibrary(libObjArray)
-
 		}
 			
 	}
@@ -313,7 +313,8 @@ function GameLibrary()
 			newCustomLib.GetObjectId = function (inputObjectArray)
 			{
 				var returnObjectIdArray = [];
-				for (iiObject = 0; iiObject < inputObjectArray.length; iiObject++)
+				var _inputObjectArrayLength = inputObjectArray.length
+				for (iiObject = 0; iiObject < _inputObjectArrayLength; iiObject++)
 				{
 					var currentObjectId = this.objectLib.indexOf(currentObject)
 
@@ -344,7 +345,8 @@ function GameLibrary()
 
 	function RemoveLibraryType(libTypeArray)
 	{
-		for (iiLibType = 0; iiLibType < libTypeArray.length; iiLibType++)
+		var _libTypeArrayLength = libTypeArray.length
+		for (iiLibType = 0; iiLibType < _libTypeArrayLength; iiLibType++)
 		{
 			var typeString = libTypeArray[iiLibType];
 
@@ -364,7 +366,8 @@ function GameLibrary()
 	function GetLibrary(typeStringArray)
 	{
 		var responseObj = {};
-		for (iiTypeString = 0; iiTypeString < typeStringArray.length; iiTypeString++)
+		var typeStringArrayLength = typeStringArray.length;
+		for (iiTypeString = 0; iiTypeString < typeStringArrayLength; iiTypeString++)
 		{
 			var typeString = typeStringArray[iiTypeString];
 

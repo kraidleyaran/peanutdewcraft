@@ -74,6 +74,7 @@ function GameObserver(_gameLibrary, _gameManager)
 
 	function SendMessage(receiverMessageObject)
 	{
+		var returnValueArray = [];
 		if (!receiverMessageObject.message)
 		{
 			throw "No message";
@@ -100,10 +101,10 @@ function GameObserver(_gameLibrary, _gameManager)
 			{
 				receiver.objectLabels = [];
 			}
-
-			if (receiver.objectLibraries.length > 0)
+			var recObjLibsLength = receiver.objectLibraries.length
+			if (recObjLibsLength > 0)
 			{
-				for (iiLibType = 0; iiLibType < receiver.objectLibraries.length; iiLibType++)
+				for (iiLibType = 0; iiLibType < recObjLibsLength; iiLibType++)
 				{
 					var currentLibType = receiver.objectLibraries[iiLibType];
 					var doesLibTypeExist = _gameLibrary.DoesLibraryTypeExist(currentLibType)
@@ -117,13 +118,15 @@ function GameObserver(_gameLibrary, _gameManager)
 					var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
 					if (libRecIndex < 0)
 					{
-						for (iiObject = 0; iiObject < currentLib.objectLib.length; iiObject++)
+						var objLibLength = currentLib.objectLib.length;
+						for (iiObject = 0; iiObject < objLibLength; iiObject++)
 						{
 							var currentObject = currentLib.objectLib[iiObject];
 							var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
 							if (objRecIndex < 0)
 							{
-								currentObject.Receive(message);
+								var recValue = currentObject.Receive(message);
+								returnValueArray.push(recValue)
 								receivedList.gameObjects.push(currentObject);	
 							}
 							
@@ -135,12 +138,15 @@ function GameObserver(_gameLibrary, _gameManager)
 
 			if (receiver.gameObjectTypes.length > 0)
 			{
-				for (iiObjType = 0; iiObjType < receiver.gameObjectTypes.length; iiObjType++)
+				var recGameObjectLength = receiver.gameObjectTypes.length;
+				for (iiObjType = 0; iiObjType < recGameObjectLength; iiObjType++)
 				{
 					var currentObjType = receiver.gameObjectTypes[iiObjType];
 					var _libTypes = _gameLibrary.GetLibraryTypes();
 
-					for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
+					var libLength = _libTypes.length
+
+					for (iiLib = 0; iiLib < libLength; iiLib++)
 					{
 						var currentLibNameString = _libTypes[iiLib];
 						var libNameIndex = receivedList.objectLibraries.indexOf(currentLibNameString);
@@ -156,7 +162,8 @@ function GameObserver(_gameLibrary, _gameManager)
 						
 						var currentObjType_List = currentLib.objList[currentObjType];
 
-						for (iiObj = 0; iiObj < currentObjType_List.length; iiObj++)
+						var objTypeListLength = currentObjType_List.length
+						for (iiObj = 0; iiObj < objTypeListLength; iiObj++)
 						{
 							
 							var currentObj = currentObjType_List[iiObj];
@@ -166,21 +173,23 @@ function GameObserver(_gameLibrary, _gameManager)
 							{
 								continue;
 							}
-							currentObj.Receive(message);
+							var recValue = currentObj.Receive(message);
+							returnValueArray.push(recValue)
 							receivedList.gameObjects.push(currentObject);
 						}
 					}
 				}	
 			}
-
-			if(receiver.objectLabels.length > 0)
+			var recLabelLength = receiver.objectLabels.length
+			if(recLabelLength > 0)
 			{
-				for (iiObjLabel = 0; iiObjLabel < receiver.objectLabels.length; iiObjLabel++)
+				for (iiObjLabel = 0; iiObjLabel < recLabelLength; iiObjLabel++)
 				{
 					var currentObjLabel = receiver.objectLabels[iiObjLabel];
 					var _libTypes = _gameLibrary.GetLibraryTypes();
 
-					for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
+					var _libTypesLength = _libTypes.length
+					for (iiLib = 0; iiLib < _libTypesLength; iiLib++)
 					{
 						var currentLibNameString = _libTypes[iiLib];
 						var libNameIndex = receivedList.objectLibraries.indexOf(currentLibNameString);
@@ -199,7 +208,8 @@ function GameObserver(_gameLibrary, _gameManager)
 						}
 						var currentObjLabelList = currentLib.objLabelList[currentObjLabel]
 
-						for (iiObj = 0; iiObj < currentObjLabelList.length; iiObj++)
+						var objLabelListLength = currentObjLabelList.length;
+						for (iiObj = 0; iiObj < objLabelListLength; iiObj++)
 						{
 							var currentObj = currentObjLabelList[iiObj];
 							var objIndex = receivedList.gameObjects.indexOf(currentObj);
@@ -208,7 +218,8 @@ function GameObserver(_gameLibrary, _gameManager)
 							{
 								continue;
 							}
-							currentObj.Receive(message);
+							var recValue = currentObj.Receive(message);
+							returnValueArray.push(recValue);
 							receivedList.gameObjects.push(currentObj);
 						}
 					}
@@ -218,19 +229,22 @@ function GameObserver(_gameLibrary, _gameManager)
 		else
 		{	
 			var _libTypes = _gameLibrary.GetLibraryTypes();
-			for (iiLib = 0; iiLib < _libTypes.length; iiLib++)
+			var libtypesLength = _libTypes.length
+			for (iiLib = 0; iiLib < libtypesLength; iiLib++)
 			{
 				var currentLib = _gameLibs[_libTypes[iiLib]]
 				var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
 				if (libRecIndex < 0)
 				{
-					for (iiObject = 0; iiObject < currentLib.objectLib.length; iiObject++)
+					var objLibLength = currentLib.objectLib.length
+					for (iiObject = 0; iiObject < objLibLength; iiObject++)
 					{
 						var currentObject = currentLib.objectLib[iiObject];
 						var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
 						if (objRecIndex < 0)
 						{
-							currentObject.Receive(message);
+							var recValue = currentObject.Receive(message);
+							returnValueArray.push(recValue)
 							receivedList.gameObjects.push(currentObject);
 						}
 					}
@@ -238,5 +252,7 @@ function GameObserver(_gameLibrary, _gameManager)
 				}
 			}
 		}
+
+		return returnValueArray;
 	}
 }
