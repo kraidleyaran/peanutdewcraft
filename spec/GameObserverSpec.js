@@ -40,7 +40,6 @@ describe("GameObserver", function (){
 			'typeName': 'gamePiece',
 			'props':[gamePiece_prop_test]
 		}
-
 		_newTypeArray = [];
 		_newTypeArray.push(gamePieceProto);	
 		newProtoStringArray = MyGameManager.CreateGameObjectType(_newTypeArray);
@@ -577,7 +576,7 @@ describe("GameObserver", function (){
 		{
 			MyGameObserver.SendMessage(messageObject)	
 		}
-		expect(_testExecuteCommandOnNonFunction_NoError).not.toThrow();
+		expect(_testExecuteCommandOnNonFunction_NoError).toThrow();
 		
 	})
 	it("If a message is sent to a gameLibrary, gameObjecttype, and objectLabel that a gameObject is all a part of, the gameObject should only receive the message once", function(){

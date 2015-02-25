@@ -155,16 +155,17 @@ function GameManager(){
 							}
 							else
 							{
+								var newPropObj = MakeCopyOfObject(currentProp);
 								_props[currentProp.propName] = {
-									'dataValue': currentProp.dataValue,
-									'defaultPropValue': currentProp.defaultPropValue,
-									'required': currentProp.required
+									'dataValue': newPropObj.dataValue,
+									'defaultPropValue': newPropObj.defaultPropValue,
+									'required': newPropObj.required
 								}
 								var newMessage = {
 									'peer':'property',
-									'propertyName': currentProp.propName,
+									'propertyName': newPropObj.propName,
 									'command':'add',
-									'commandValue': currentProp.defaultPropValue
+									'commandValue': newPropObj.defaultPropValue
 								}
 								_addPropsToChildObjectsMessage.push(newMessage)
 
@@ -206,16 +207,17 @@ function GameManager(){
 							}
 							else
 							{
+								var newObjProp = MakeCopyOfObject(currentProp);
 								_props[currentProp.propName] = {
-									'dataValue': currentProp.dataValue,
-									'defaultPropValue': currentProp.defaultPropValue,
-									'required': currentProp.required
+									'dataValue': newObjProp.dataValue,
+									'defaultPropValue': newObjProp.defaultPropValue,
+									'required': newObjProp.required
 								}
 								var newMessage = {
 									'peer':'property',
-									'propertyName': currentProp.propName,
+									'propertyName': newObjProp.propName,
 									'command':'set',
-									'commandValue': currentProp.defaultPropValue
+									'commandValue': newObjProp.defaultPropValue
 								}
 								_addPropsToChildObjectsMessage.push(newMessage)
 							}							
@@ -507,7 +509,7 @@ function GameManager(){
 								
 								if (!currentParamPropObj.propValue && protoProps[currentParamPropObj].required != true)
 								{
-									currentParamPropsObj.propValue = protoProps[currentParamPropObj.propName].defaultPropValue;
+									currentParamPropObj.propValue = MakeCopyOfObject(protoProps[currentParamPropObj.propName].defaultPropValue);
 								}
 								_addPropsArray.push(currentParamPropObj)
 							}
@@ -582,7 +584,7 @@ function GameManager(){
 
 						if (doesCurrentPropExist == true)
 						{
-							props[inputProp] = inputKeyValue;
+							props[inputProp] = MakeCopyOfObject(inputKeyValue);
 						}
 						else
 						{
@@ -655,7 +657,7 @@ function GameManager(){
 
 							if (doesPropExist == false)
 							{
-								props[currentPropName] = currentPropObj.propValue;
+								props[currentPropName] = MakeCopyOfObject(currentPropObj.propValue);
 							}
 							else
 							{
@@ -854,12 +856,11 @@ function GameManager(){
 									if (doesInputPropExist == true)
 									{
 										var objProp = props[currentPropName]
-										if (typeof objProp == 'function')
-										{
-											var objFunction = objProp()
-											var runFunction = objFunction.bind(props)
-											runFunction(currentValue);			
-										}
+										
+										var objFunction = objProp()
+										var runFunction = objFunction.bind(props)
+										runFunction(currentValue);			
+										
 									}
 									break;
 								case 'remove':
@@ -1106,8 +1107,9 @@ function GameManager(){
 			var newObjLabel;
 			var newObjProps = [];
 			var testCount = iiObject;
+			var objPropsStringLength = objPropStrings.length
 
-			for (iiProp = 0; iiProp < objPropStrings.length; iiProp++)
+			for (iiProp = 0; iiProp < objPropsStringLength; iiProp++)
 			{
 				newObjProps[iiProp] = {
 					'propName': objPropStrings[iiProp],
@@ -1177,7 +1179,7 @@ function GameManager(){
 				'propName': objKeys[iiObjProp],
 				'required': true,
 				'dataValue': valueType,
-				'defaultPropValue': objProps[objKeys[iiObjProp]]
+				'defaultPropValue': MakeCopyOfObject(objProps[objKeys[iiObjProp]])
 			}
 			newProtoProps.push(propsObj)
 		}
@@ -1255,6 +1257,7 @@ function GameManager(){
 		else
 		{
 			throw "GameObserver has already been set"
+			return;
 		}
 	}
 }
