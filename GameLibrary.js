@@ -9,10 +9,6 @@ function GameLibrary()
 
 	var _myOwnDamnLibrary = "This is a random string I put in here that forces you to copy / change this in the understanding you are purposely using your own library instead of mine. Good luck with that."
 
-	this.AddToLibrary = AddToLibrary;
-	this.GetFromLibrary = GetFromLibrary;
-	this.RemoveFromLibrary = RemoveFromLibrary;
-
 	this.AddLibraryType = AddLibraryType;
 	this.RemoveLibraryType = RemoveLibraryType;
 	this.GetLibrary = GetLibrary;
@@ -36,127 +32,6 @@ function GameLibrary()
 		}
 
 		return response;
-	}
-
-	function GetFromLibrary(libraryType, objectIndex)
-	{
-		var returnObj;
-
-		var doesLibExist = DoesLibraryTypeExist(libraryType);
-		if (doesLibExist == true)
-		{
-			var currentLib = customLibs[doesLibExist.returnIndex]
-			returnObj = currentLib[objectIndex];
-
-		}
-		else
-		{
-			throw currentLib + " is not a current library"
-		}
-
-
-		return currentObj;
-	}
-
-	function AddToLibrary(inputParamsArray)
-	{
-		var objectArray = {};
-		var _inputParamsArrayLength = inputParamsArray.length
-		for (iiParam = 0; iiParam < _inputParamsArrayLength; iiParam++)
-		{
-			var currentParam = inputParamsArray[iiParam];
-
-			var inputObject = currentParam.inputObject;
-			var libraryType = currentParam.libraryType;
-			
-			var doesLibExist = DoesLibraryTypeExist(libraryType)
-
-			if (doesLibExist == false)
-			{
-				throw "Library type " + libraryType + " does not exist"
-				return;
-			}
-			if (!objectArray[libraryType])
-			{
-				objectArray[libraryType] = []	
-			}
-			objectArray[libraryType].push(inputObject)
-
-		}
-		var objArrayKeys = Object.keys(objectArray);
-		var currentLibArray = this.GetLibrary(objArrayKeys);
-		var objArrayKeysLength = objArrayKeys.length
-		for (iiLibType = 0; iiLibType < objArrayKeysLength; iiLibType++)
-		{
-			var currentLib = currentLibArray[objArrayKeys[iiLibType]]
-			var libObjArray = objectArray[objArrayKeys[iiLibType]]
-			currentLib.AddToLibrary(libObjArray)
-		}
-			
-	}
-
-	function RemoveFromLibrary(inputParamsArray)
-	{
-		var objectArray = {};
-		for (iiParam = 0; iiParam < inputParamsArray.length; iiParam++)
-		{
-			var currentParam = inputParamsArray[iiParam];
-
-			var currentObject = currentParam.inputObject;
-			var libraryType = currentParam.libraryType;
-
-			var doesLibExist = DoesLibraryTypeExist(libraryType);
-			if (doesLibExist == true)
-			{
-				if(!objectArray[libraryType])
-				{
-					objectArray[libraryType] = []
-				}
-				objectArray[libraryType].push(currentObject)
-			}
-			else
-			{
-				throw "Library type " + libraryType + " does not exist."
-				return;
-			}	
-		}
-
-		var objLibKeys = Object.keys(objectArray);
-
-		var returnObjects = []
-
-		for (iiLib = 0; iiLib < objLibKeys.length; iiLib++)
-		{
-			var _removedObjArray = customLibs[objLibKeys[iiLib]].RemoveFromLibrary(objectArray[objLibKeys[iiLib]]);
-			returnObjects = returnObjects.concat(_removedObjArray);
-		}
-
-		return returnObjects;
-	}
-	function DoesObjectExistInLibrary(libraryType, inputObject)
-	{
-		var doesLib = DoesLibraryTypeExist(libraryType);
-		if (doesLib == true)
-		{
-			var objIndex = customLibs[libraryType].objectLib.indexOf(inputObject)
-			var response = {};
-
-			if (objIndex < 0)
-			{
-				response.bool = false;
-				return response
-			}
-			else
-			{
-				response.bool = true;
-				response.returnIndex = objIndex
-				return response;
-			}
-		}
-		else
-		{
-			throw libraryType + " libraryType does not exist";
-		}
 	}
 
 	function DoesLibraryTypeExist(typeString)
@@ -184,163 +59,336 @@ function GameLibrary()
 				throw "libraryType is invalid: " + libTypeString;
 			}
 
-			var newCustomLib = {
-				'objectLib': [],
-				'objList': {},
-				'objLabelList' : {},
-				'libName': libTypeString
-			}
-
-			newCustomLib.DoesObjectTypeExistInLibrary = function(inputObjectTypeName)
+			var newCustomLibrary = function()
 			{
-				var _response = {};
+				var _objLibrary = [];
+				var _objList = {}
+				var _objLabelList = {}
+				var _libName = libTypeString;
 
-				var currentObjTypeList = Object.keys(newCustomLib.objList)
-				var inputObjIndex = currentObjTypeList.indexOf(inputObjectTypeName)
-				if (inputObjIndex < 0)
-				{
-					_response = false;
-				}
-				else
-				{
-					_response = true;
-				}
-
-				return _response;
-			}
-			newCustomLib.AddToLibrary = function(inputObjectArray)
-			{
-				var responseArray = [];
-				if (!inputObjectArray)
-				{
-					throw "Parameter is invalid."
-					return;
-				}
-				var paramType = typeof inputObjectArray
+				this.DoesObjectExistInLibrary = DoesObjectExistInLibrary;
+				this.DoesObjectTypeExistInLibrary = DoesObjectTypeExistInLibrary;
 				
-				if (paramType == 'string' || !inputObjectArray.length)
+				this.AddToLibrary = AddToLibrary;
+				this.GetFromLibrary = GetFromLibrary;
+				this.RemoveFromLibrary = RemoveFromLibrary;
+
+				this.GetName = GetName;
+				this.GetLength = GetLength;
+
+				function GetName()
 				{
-					throw "Parameter must be an array."
-					return;
+					return _libName;
 				}
-				for (iiObject = 0; iiObject < inputObjectArray.length; iiObject++)
+				function DoesObjectTypeExistInLibrary(inputObjectTypeName)
 				{
-					var inputObject = inputObjectArray[iiObject];
-					var _doesObjExist = DoesObjectExistInLibrary(this.libName, inputObject);
+					var _response = {};
 
-					if (!inputObject.typeName || inputObject.typeName == null || inputObject.typeName == '')
+					var currentObjTypeList = Object.keys(_objList)
+					var inputObjIndex = currentObjTypeList.indexOf(inputObjectTypeName)
+					if (inputObjIndex < 0)
 					{
-						throw "inputObject must have a valid typeName."
-						return;
-					}
-
-					if (_doesObjExist.bool == false)
-					{
-						this.objectLib.push(inputObject);
-
-						var _doesObjTypeExistInLib = this.DoesObjectTypeExistInLibrary(inputObject.typeName)
-
-						if (_doesObjTypeExistInLib == false)
-						{
-							this.objList[inputObject.typeName] = [] 							
-						}
-						this.objList[inputObject.typeName].push(inputObject)
-						
-						var inputObjectLabel = inputObject.GetLabel();
-						if (inputObjectLabel != null)
-						{
-							var currentObjLabels = Object.keys(this.objLabelList)
-							var objLabelIndex = currentObjLabels.indexOf(inputObjectLabel)
-
-							if (objLabelIndex < 0)
-							{
-								this.objLabelList[inputObjectLabel] = []
-								this.objLabelList[inputObjectLabel].push(inputObject)
-							}
-							else
-							{
-								this.objLabelList[inputObjectLabel].push(inputObject)
-							}
-						}
+						_response = false;
 					}
 					else
 					{
-						throw "Object " + inputObject + " already exists in library " + this.libName;
-						return;
-					}	
+						_response = true;
+					}
+
+					return _response;
 				}
-			}
-			newCustomLib.RemoveFromLibrary = function (inputObjectArray)
-			{	
-				var returnObjectArray = [];
-				for (iiObject = 0; iiObject < inputObjectArray.length; iiObject++)
+				function DoesObjectLabelExistInLibrary(inputObjectLabelString)
 				{
-					var currentObject = inputObjectArray[iiObject]
-					var inputObjectId = this.objectLib.indexOf(currentObject);
+					var _response = {};
 
-					if (inputObjectId < 0)
+					var currentObjLabelList = Object.keys(_objLabelList);
+					var inputLabelIndex = currentObjLabelList.indexOf(inputObjectLabelString);
+					if (inputLabelIndex < 0)
 					{
-						throw currentObject + " does not exist in library " + this.libName ;
+						_response = false;
+					}
+					else
+					{
+						_response = true;
+					}
+					return _response;
+				}
+				function AddToLibrary(inputObjectArray)
+				{
+					var responseArray = [];
+					if (!inputObjectArray)
+					{
+						throw "Parameter is invalid."
 						return;
-					}
-					var objLabel;
-
-					this.objectLib.splice(inputObjectId,1)
-
-					this.objList[currentObject.typeName] -= 1
-
-					if (this.objList[currentObject.typeName] <= 0)
+					}				
+					for (iiObject = 0; iiObject < inputObjectArray.length; iiObject++)
 					{
-						delete this.objList[currentObject.typeName]
-					}
-					
-					if (currentObject.GetLabel())
-					{
-						objLabel = currentObject.GetLabel()
-						var objLabelIndex = this.objLabelList[objLabel].indexOf(currentObject)
-						this.objLabelList[objLabel].splice(objLabelIndex, 1)
+						var inputObject = inputObjectArray[iiObject];
+						var _doesObjExist = DoesObjectExistInLibrary(inputObject);
 
-						if (this.objLabelList[objLabel].length <= 0)
+						if (!inputObject.typeName || inputObject.typeName == null || inputObject.typeName == '')
 						{
-							delete this.objLabelList[objLabel]
+							throw "inputObject must have a valid typeName."
+							return;
+						}
+
+						if (_doesObjExist == false)
+						{
+							var _newObjectId = _objLibrary.length;
+							_objLibrary.push(inputObject);
+
+							var _doesObjTypeExistInLib = DoesObjectTypeExistInLibrary(inputObject.typeName)
+
+							if (_doesObjTypeExistInLib == false)
+							{
+								_objList[inputObject.typeName] = [] 							
+							}
+							_objList[inputObject.typeName].push(_newObjectId)
+							
+							var inputObjectLabel = inputObject.GetLabel();
+							if (inputObjectLabel)
+							{
+								var objLabelExist = DoesObjectLabelExistInLibrary(inputObjectLabel)
+
+								if (objLabelExist == false)
+								{
+									_objLabelList[inputObjectLabel] = []
+								}
+								_objLabelList[inputObjectLabel].push(_newObjectId)
+							}
+						}
+						else
+						{
+							throw "Object " + inputObject.typeName + " already exists in library " + _libName;
+							return;
+						}	
+					}
+				}
+
+				function GetFromLibrary(params)
+				{
+					var thisLib = this;
+					
+					var paramsKeys = Object.keys(params)
+					var paramsKeysLength = paramsKeys.length;
+					var returnObjArray = [];
+					var allObjsIndex = paramsKeys.indexOf('allObjs')
+					if (allObjsIndex > -1)
+					{
+						if (params.allObjs == true)
+						{
+							var libLength = GetLength();
+							for (iiObj = 0; iiObj < libLength; iiObj++)
+							{
+								returnObjArray[iiObj] = _objLibrary[iiObj];
+							}
 						}
 					}
-					
-					returnObjectArray.push(currentObject);
-				}			
-				return returnObjectArray;
-			}
-			newCustomLib.GetObjectId = function (inputObjectArray)
-			{
-				var returnObjectIdArray = [];
-				var _inputObjectArrayLength = inputObjectArray.length
-				for (iiObject = 0; iiObject < _inputObjectArrayLength; iiObject++)
-				{
-					var currentObjectId = this.objectLib.indexOf(currentObject)
-
-					if (currentObjectId < 0)
+					var arrLength = returnObjArray.length
+					if (arrLength > 0)
 					{
-						throw currentObject + " does not exist in library " + this.libName;
-						return;
+						return returnObjArray;
+					}
+					for (iiParamKey = 0; iiParamKey < paramsKeysLength; iiParamKey++)
+					{
+						var currentParamKeyString = paramsKeys[iiParamKey];
+						switch(currentParamKeyString)
+						{
+							case 'objectTypes':
+								var objTypeArray = _GetFromLibraryByObjectType(params.objectTypes)
+								var returnObjArrayLength = returnObjArray.length;
+								for (iiObj = 0; iiObj < returnObjArrayLength; iiObj++)
+								{
+									var currentObj = objTypeArray[iiObj];
+									var objIndex = returnObjArray.indexOf(currentObj);
+									if (objIndex < 0)
+									{
+										returnObjArray.push(currentObj);
+									}
+								}
+								break;
+							case 'objectLabels':
+								var objLabelArray = _GetFromLibraryByObjetLabel(params.objectLabels)
+								var returnObjArrayLength = returnObjArray.length;
+								for (iiObj = 0; iiObj < returnObjArrayLength; iiObj++)
+								{
+									var currentObj = objLabelArray[iiObj];
+									var objIndex = returnObjArray.indexOf(currentObj);
+									if (objIndex < 0)
+									{
+										returnObjArray.push(currentObj);
+									}
+								}
+								break;
+							case 'libIndex':
+								var objLibIndexArr = params.libIndex;
+								var objIndexLength = params.libIndex.length;
+								for (iiObj = 0; iiObj < objIndexLength; iiObj++)
+								{
+									var currentObjIndex = objLibIndexArr[iiObj];
+									var currentObj = _objLibrary[currentObjIndex];
+									returnObjArray.push(currentObj)
+								}
+								break;
+							default:
+								throw "Invalid property for Getting objects from a library: " + currentParamKeyString;
+								return;
+								break;
+						}
+					}
+					return returnObjArray;
+
+					function _GetFromLibraryByObjectType(inputTypeNameArray)
+					{
+						var inputTypeNameArrayLength = inputTypeNameArray.length;
+						var returnObjTypeArray = [];
+						for (iiTypeName = 0; iiTypeName < inputTypeNameArrayLength; iiTypeName++)
+						{
+							var currentTypeName = inputTypeNameArray[iiTypeName];
+							var typeNameExist = DoesObjectTypeExistInLibrary(currentTypeName);
+							if (typeNameExist == true)
+							{
+								var objTypeIds = _objList[currentTypeName];
+								var objTypeIdsLength = objTypeIds.length;
+								for (iiObjId = 0; iiObjId < objTypeIdsLength; iiObjId++)
+								{
+									returnObjTypeArray.push(_objLibrary[iiObjId]);
+								}
+							}
+						}
+
+						return returnObjTypeArray;
 					}
 
-					var currentObject = inputObjectArray[iiObject];
-					
-					var returnObject = {
-						'gameObject': currentObject,
-						'objectId': currentObjectId
+					function _GetFromLibraryByObjetLabel(inputLabelStringArray)
+					{
+						var inputLabelStringArrayLength = inputLabelStringArray.length;
+						var returnObjLabelArray = [];
+						for (iiObjLabel = 0; iiObjLabel < inputLabelStringArrayLength; iiObjLabel++)
+						{
+							var currentObjLabel = inputLabelStringArray[iiObjLabel];
+							var objLabelExist = DoesObjectLabelExistInLibrary(currentObjLabel);
+							if (objLabelExist == true)
+							{
+								var objLabelIdArray = _objLabelList[currentObjLabel];
+								var labelIdArrayLength = objLabelIdArray.length;
+								for (iiObjLabelId = 0; iiObjLabelId < labelIdArrayLength; iiObjLabelId++)
+								{
+									returnObjLabelArray.push(_objLibrary[objLabelIdArray[iiObjLabelId]])
+								}
+							}
+						}
 					}
-					returnObjectArray.push(returnObject);
+				}
+				function RemoveFromLibrary(params)
+				{	
+					var returnObjectArray = [];
+					var paramsLength = params.length;
+					for (iiObject = 0; iiObject < paramsLength; iiObject++)
+					{
+						var currentObject = params[iiObject]
+						var inputObjectId = _objLibrary.indexOf(currentObject);
+
+						if (inputObjectId < 0)
+						{
+							continue;
+						}
+						var objLabel;
+
+						_objLibrary.splice(inputObjectId,1)
+
+						var _typeNameIndex =_objList[currentObject.typeName].indexOf(inputObjectId)
+						_objList[currentObject.typeName].splice(_typeNameIndex, 1)
+						var typeNameEntryLength = _objList[currentObject.typeName].length;
+
+						if (typeNameEntryLength <= 0)
+						{
+							delete _objList[currentObject.typeName]
+						}
+						
+						if (currentObject.GetLabel())
+						{
+							objLabel = currentObject.GetLabel()
+							var objLabelIndex = _objLabelList[objLabel].indexOf(inputObjectId)
+							_objLabelList[objLabel].splice(objLabelIndex, 1)
+							var objLabelListLength = _objLabelList[objLabel].length
+							if (objLabelListLength <= 0)
+							{
+								delete _objLabelList[objLabel]
+							}
+						}
+						
+						returnObjectArray.push(currentObject);
+					}			
+					return returnObjectArray;
 				}
 
-				return returnObjectIdArray;
+				function GetLength()
+				{
+					var response = _objLibrary.length;
+					return response;
+				}
+				function GetObjectTypeCount(params)
+				{
+					//TO DO: Fill this fucker out					
+				}
+				function GetObjectLabelCount(params)
+				{
+					//TO DO: Also fill this fucker out
+				}
+
+				function ClearLibrary()
+				{
+					_objLibrary = [];
+					_objList = {};
+					_objLabelList = {};
+				}
+
+				function DoesObjectExistInLibrary(inputObject)
+				{
+					var objIndex = _objLibrary.indexOf(inputObject)
+					returnBool = {};
+					if (objIndex < 0)
+					{
+						returnBool = false;
+					}
+					else
+					{
+						reutnrBool = true;
+					}
+
+					return returnBool;
+				}
+
+				function GetObjectId(inputObjectArray)
+				{
+					var returnObjectIdArray = [];
+					var _inputObjectArrayLength = inputObjectArray.length
+					for (iiObject = 0; iiObject < _inputObjectArrayLength; iiObject++)
+					{
+						var currentObjectId = _objLibrary.indexOf(currentObject)
+
+						if (currentObjectId < 0)
+						{
+							continue;
+						}
+
+						var currentObject = inputObjectArray[iiObject];
+						
+						var returnObject = {
+							'gameObject': currentObject,
+							'objectId': currentObjectId
+						}
+						returnObjectArray.push(returnObject);
+					}
+
+					return returnObjectIdArray;
+				}
+				return this;
 			}
-
-			customLibs[libTypeString] = newCustomLib;
-			responseArray.push(libTypeString);
-
+			var newCustomLib = newCustomLibrary();
+			customLibs[newCustomLib.GetName()] = newCustomLib;
 		}
-		return responseArray;
 	}
 
 	function RemoveLibraryType(libTypeArray)

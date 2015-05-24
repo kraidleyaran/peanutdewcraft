@@ -373,13 +373,12 @@ describe("GameMaster", function(){
 			newInputButtonConditionArray.push(newInputButtonKeyboardConditionParam, newInputButtonMouseConditionParam, newInputButtonPadConditionParam);
 
 			var createConditionArray = MyGameMaster.CreateInputButtonConditions(newInputButtonConditionArray);
-			var createConditionArrayLength = createConditionArray.length;
-			var validConditionTypeArray = ['inputkeyboardButton', 'inputmouseButton','inputpadButton']		
+			var createConditionArrayLength = createConditionArray.length;		
 			for (iiCondition = 0; iiCondition < createConditionArrayLength; iiCondition++)
 			{
 				var currentCondition = createConditionArray[iiCondition]
-				var conditionTypeIndex = validConditionTypeArray.indexOf(currentCondition.conditionType)
-				expect(conditionTypeIndex).not.toBeLessThan(0)
+				var conditionType = currentCondition.conditionType;
+				expect(conditionType).toEqual('button')
 			}
 		})
 		it("When an inputButtonCondition parameter contains an invalid deviceType, throw an error", function(){
@@ -470,6 +469,24 @@ describe("GameMaster", function(){
 			expect(_testCreateInputButtonCondition_NoNameLabelProperty_ThrowError).toThrow("Missing properties: nameLabel")
 
 		})
+		it("When an inputButtonCondition parameter's nameLabel property is an empty string, throw an error", function(){
+
+			var newInputButtonConditionArray = [];
+
+			var newInputButtonConditionParam = {
+				'deviceType': 'keyboard',
+				'eventType':'down',
+				'inputCodes':[0],
+				'nameLabel': ""
+			}
+			newInputButtonConditionArray.push(newInputButtonConditionParam);
+			
+			var _testCreateInputButtonCondition_EmptyNameLabelProperty_ThrowError = function()	
+			{
+				MyGameMaster.CreateInputButtonConditions(newInputButtonConditionArray)
+			}
+			expect(_testCreateInputButtonCondition_EmptyNameLabelProperty_ThrowError).toThrow("Undefined is an invalid property value: nameLabel");
+		})
 		it("If the 'inputCodes' property on the inputButtonCondition object does not contain anything in it's array, an error should be thrown", function (){
 
 			var newInputButtonConditionArray = [];
@@ -508,7 +525,148 @@ describe("GameMaster", function(){
 			}
 			expect(_testCreateInputButtonCondition_InvalidEventTypeArray_ThrowError).toThrow('Invalid Button Event: ' + newInputButtonConditionParam.eventType);			
 		})
-		
+
+	})
+	describe(" -> CreateInputMoveConditions()", function(){
+		it("Given valid parameters, a Input Move Condition can be created from GameMaster.CreateInputMoveConditions()", function(){
+
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType': 'mouse',
+				'position': [0,0],
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			var _testCreateInputMoveCondition_NoError = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray);
+			}
+			expect(_testCreateInputMoveCondition_NoError).not.toThrow();
+		})
+		it("Given valid parameters, many Input Move Conditions can be created from GameMaster.CreateInputMoveConditions()", function(){
+
+			var newInputMoveConditionArray = [];
+			var _newInputMoveConditionCount = 10;
+			for (iiNewCondition = 0; iiNewCondition < _newInputMoveConditionCount; iiNewCondition++)
+			{
+				var newInputMoveCondition = {
+					'deviceType': 'mouse',
+					'position': [0,0],
+					'nameLabel': 'new move condition ' + iiNewCondition
+				}
+
+				newInputMoveConditionArray.push(newInputMoveCondition);
+			}
+
+			var _testCreateManyInputMoveConditions_NoError = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray);
+			}
+			expect(_testCreateManyInputMoveConditions_NoError).not.toThrow();
+
+		})
+		it("When a new Input Move Condition is created, it should have a conditionType of 'move'", function(){
+			
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType': 'mouse',
+				'position': [0,0],
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			var conditionArray = MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray);
+			var currentCondition = conditionArray[0];
+			expect(currentCondition.conditionType).toEqual('move')
+		})
+		it("When a new Input Move Condition is created, it's name should be added to _conditions under it's nameLabel", function(){
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType': 'mouse',
+				'position': [0,0],
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray);
+			var conditionNames = MyGameMaster.GetConditionNames();
+			var conditionNameIndex = conditionNames.indexOf(newInputMoveCondition.nameLabel);
+			expect(conditionNameIndex).not.toBeLessThan(0);
+
+		})
+		it("When an Input Move Condition parameter contains an invalid device type, throw an error", function(){
+			
+
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType': 'keyboard',
+				'position': [0,0],
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);			
+
+			var _testInputMoveCondition_InvalidDeviceType = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray);
+			}
+			expect(_testInputMoveCondition_InvalidDeviceType).toThrow("Invalid deviceType: " + newInputMoveCondition.deviceType);
+		})
+		it("When an Input Move Condition parameter does not contain a deviceType property, throw an error", function(){
+			
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'position': [0,0],
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			var _testInputMoveCondition_NoDeviceTypeProp = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray)
+			}
+			expect(_testInputMoveCondition_NoDeviceTypeProp).toThrow("Missing Input Move Condition property: deviceType")
+		})
+		it("When an Input Move Condition parameter does not contain a position property, throw an error", function (){
+			
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType':'mouse',
+				'nameLabel': 'new move condition'
+			}
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			var _testInputMoveCondition_NoPositionProp = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray)
+			}
+			expect(_testInputMoveCondition_NoPositionProp).toThrow("Missing Input Move Condition property: position")
+
+		})
+		it("When an Input Move Condition parameter does not contain a nameLabel property, throw an error", function(){
+
+			var newInputMoveConditionArray = [];
+
+			var newInputMoveCondition = {
+				'deviceType':'mouse',
+				'position': [0,0]
+			}
+
+			newInputMoveConditionArray.push(newInputMoveCondition);
+
+			var _testInputMoveCondition_NoNameLabelProp = function()
+			{
+				MyGameMaster.CreateInputMoveConditions(newInputMoveConditionArray)
+			}
+			expect(_testInputMoveCondition_NoNameLabelProp).toThrow("Missing Input Move Condition property: nameLabel")
+
+		})
 	})
 
 })

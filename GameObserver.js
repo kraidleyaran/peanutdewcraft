@@ -4,10 +4,12 @@ function GameObserver(_gameLibrary, _gameManager)
 	if (!_gameLibrary)
 	{
 		throw "Missing GameLibrary Reference"
+		return;
 	}
 	if (!_gameManager)
 	{
 		throw "Missing GameManager Reference"
+		return;
 	}
 
 	var libCheck = "This is a random string I put in here that forces you to copy / change this in the understanding you are purposely using your own library instead of mine. Good luck with that."
@@ -19,10 +21,12 @@ function GameObserver(_gameLibrary, _gameManager)
 	if (isLibValid == false)
 	{
 		throw "GameLibrary is not valid"
+		return;
 	}
 	if (isGMValid == false)
 	{
 		throw "GameManager is not valid"
+		return;
 	}
 
 	_gameLibrary.SetGameObserver(that)
@@ -85,7 +89,7 @@ function GameObserver(_gameLibrary, _gameManager)
 				'gameObjects':[],
 				'objectLibraries':[],
 		}
-
+		console.log(receiverMessageObject.receiver)
 		if (receiverMessageObject.receiver)
 		{
 			var receiver = receiverMessageObject.receiver;
@@ -115,13 +119,17 @@ function GameObserver(_gameLibrary, _gameManager)
 					}
 
 					var currentLib = _gameLibs[currentLibType];
+					var getFromLibParams = {
+						"allObjs": true
+					}
+					var libObjs = currentLib.GetFromLibrary(getFromLibParams)
 					var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
 					if (libRecIndex < 0)
 					{
-						var objLibLength = currentLib.objectLib.length;
+						var objLibLength = currentLib.GetLength();
 						for (iiObject = 0; iiObject < objLibLength; iiObject++)
 						{
-							var currentObject = currentLib.objectLib[iiObject];
+							var currentObject = libObjs[iiObject];
 							var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
 							if (objRecIndex < 0)
 							{
@@ -135,10 +143,9 @@ function GameObserver(_gameLibrary, _gameManager)
 					}
 				}
 			}
-
+			var recGameObjectLength = receiver.gameObjectTypes.length;
 			if (receiver.gameObjectTypes.length > 0)
 			{
-				var recGameObjectLength = receiver.gameObjectTypes.length;
 				for (iiObjType = 0; iiObjType < recGameObjectLength; iiObjType++)
 				{
 					var currentObjType = receiver.gameObjectTypes[iiObjType];
@@ -173,9 +180,13 @@ function GameObserver(_gameLibrary, _gameManager)
 							{
 								continue;
 							}
-							var recValue = currentObj.Receive(message);
-							returnValueArray.push(recValue)
-							receivedList.gameObjects.push(currentObject);
+							else
+							{
+								var recValue = currentObj.Receive(message);
+								returnValueArray.push(recValue)
+								receivedList.gameObjects.push(currentObject);	
+							}
+							
 						}
 					}
 				}	
@@ -226,8 +237,10 @@ function GameObserver(_gameLibrary, _gameManager)
 				}
 			}
 		}
-		else
+		console.log("label " + recLabelLength + " objLibs " + recObjLibsLength + " recGameObjectLength " +recGameObjectLength)
+		if (recLabelLength + recObjLibsLength + recGameObjectLength == 0)
 		{	
+			console.log("Does it go in here?")
 			var _libTypes = _gameLibrary.GetLibraryTypes();
 			var libtypesLength = _libTypes.length
 			for (iiLib = 0; iiLib < libtypesLength; iiLib++)
@@ -236,10 +249,14 @@ function GameObserver(_gameLibrary, _gameManager)
 				var libRecIndex = receivedList.objectLibraries.indexOf(currentLib.libName);
 				if (libRecIndex < 0)
 				{
-					var objLibLength = currentLib.objectLib.length
+					var objLibLength = currentLib.GetLength();
+					var _getFromLibParams = {
+						'allObjs': true
+					}
+					var libObjs = currentLib.GetFromLibrary(_getFromLibParams)
 					for (iiObject = 0; iiObject < objLibLength; iiObject++)
 					{
-						var currentObject = currentLib.objectLib[iiObject];
+						var currentObject = libObjs[iiObject];
 						var objRecIndex = receivedList.gameObjects.indexOf(currentObject);
 						if (objRecIndex < 0)
 						{

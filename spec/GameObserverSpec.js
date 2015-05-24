@@ -86,6 +86,7 @@ describe("GameObserver", function (){
 		}
 	})
 	it("GameObjects in any gameLibrary should be able to receive a message", function(){
+
 		var messageArray = [];
 
 		messageArray[0]  = {
@@ -98,6 +99,7 @@ describe("GameObserver", function (){
 		var messageObject = {
 			'message': messageArray
 		}
+
 		var _testGameObserverSendingMessage_NoError = function()
 		{
 			MyGameObserver.SendMessage(messageObject)	
@@ -109,9 +111,11 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibLength = _currentTestLib.GetLength();
+			var _libObjs = _currentTestLib.GetFromLibrary({'allObjs':true});
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _libObjs[iiObject];
 				expect(_currentTestObject.GetProperty('test')).toEqual(false)
 			}
 		}
@@ -123,12 +127,13 @@ describe("GameObserver", function (){
 		var cloneNewerGamePieceOptions = {
 			'howMany': 1,
 			'objectLabels':[NewerGamePieceLabel]
-		}
+		};
 		var newerGamePieceObjectArray = MyGameManager.CloneGameObject(newGamePiece_Object, cloneNewerGamePieceOptions);
-		var newerGamePieceLibString = 'Newer Game Pieces'
+		var newerGamePieceLibString = 'Newer Game Pieces';
 		MyGameLibrary.AddLibraryType([newerGamePieceLibString]);
-		var newerGameLib = _gameLibs[newerGamePieceLibString]
-		newerGameLib.AddToLibrary(newerGamePieceObjectArray)
+		var newerGameLib = _gameLibs[newerGamePieceLibString];
+		console.log(_gameLibs);
+		newerGameLib.AddToLibrary(newerGamePieceObjectArray);
 
 		var messageArray = [];
 
@@ -149,9 +154,11 @@ describe("GameObserver", function (){
 		MyGameObserver.SendMessage(messageObject)
 
 		var _currentTestLib = _gameLibs[gamePieceLibString]
-		for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+		var _currentTestLibLength = _currentTestLib.GetLength();
+		var _libObjs = _currentTestLib.GetFromLibrary({'allObjs':true})
+		for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 		{
-			var _currentTestObject = _currentTestLib.objectLib[iiObject];
+			var _currentTestObject = _libObjs[iiObject];
 			expect(_currentTestObject.GetProperty('test')).toEqual(true)
 		}
 

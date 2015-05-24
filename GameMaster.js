@@ -17,7 +17,8 @@ function GameMaster(_gameObserver, _inputDevice){
 
 	this.CreateGameObjectConditions = CreateGameObjectConditions;
 	this.CreateInputButtonConditions = CreateInputButtonConditions;
-	this.CreateInputPositionConditions = CreateInputPositionConditions;
+	this.CreateInputMoveConditions = CreateInputMoveConditions;
+
 	this.GetConditionNames = GetConditionNames;
 	this.GetConditions = GetConditions;
 
@@ -44,6 +45,22 @@ function GameMaster(_gameObserver, _inputDevice){
 		var conditionNameIndex = currentConditionNames.indexOf(inputConditionName);
 		var returnResult;
 		if (conditionNameIndex < 0)
+		{
+			returnResult = false;
+		}
+		else
+		{
+			returnResult = true;
+		}
+
+		return returnResult;
+	}
+	function DoesActionNameExist(inputActionName)
+	{
+		var currentActionNames = GetActionNames();
+		var actionNameIndex = currentActionNames.indexOf(inputActionName);
+		var returnResult;
+		if (actionNameIndex < 0)
 		{
 			returnResult = false;
 		}
@@ -92,124 +109,8 @@ function GameMaster(_gameObserver, _inputDevice){
 		return returnConditionArray;
 	}
 	/*
-		inputPositionConditionArray[i] = {
-			"deviceType": "keyboard", "pad", or "mouse",
-			"positionValues"= [array of values for positions]
-			"nameLabel": string containing the name of the condition
-		}
-	*/
-	function CreateInputPositionConditions(params)
-	{
-		var returnConditionArray = [];
-		var paramsLength = params.length;
-
-		for (iiInputPositionCondition = 0; iiInputPositionCondition < paramsLength; iiInputPositionCondition++)		
-		{
-			var newInputPositionConditionObj = {};
-			var currentInputPositionCondition = params[iiInputPositionCondition];
-			_CheckInputPositionProps(currentInputPositionCondition);
-			var inputPosKeys = Object.keys(currentInputPositionCondition);
-			var inputPosKeysLength = inputPosKeys.length;
-			var _propCount = inputPosKeysLength - 1;
-
-			for (iiInputPosProp = 0; iiInputPosProp < inputPosKeysLength; iiInputPosProp++)
-			{
-				var _currentPosPropString = inputPosKeys[iiInputPosProp];
-				var _currentPosProp = currentInputPositionCondition[_currentPosPropString];
-				newInputPositionConditionObj[_currentPosPropString] = MakeCopyOfObject(_currentPosProp);
-			}
-			if (iiInputPosProp == _propCount)
-			{
-				newInputConditionObj["conditionType"] = "input" + currentInputCodeObj["deviceType"] + "Position"
-				returnConditionArray.push(newInputPositionConditionObj);
-				_conditions[newInputPositionConditionObj.nameLabel] = newInputPositionConditionObj;
-			}
-		}
-		function _CheckInputPositionProps(inputPositionConditionParams)
-		{
-			var _inputConditionKeys = Object.keys(inputPositionConditionParams);
-			var _inputConditionKeyLength = _inputConditionKeys.length;
-			var reqInputConditionProps = ['inputCodes','deviceType', 'nameLabel']
-			var returnArray = [];
-
-			for (iiProp = 0; iiProp < _inputConditionKeyLength; iiProp++)
-			{
-				var _currentProp = _inputConditionKeys[iiProp];
-				var _currentPropValidIndex = reqInputConditionProps.indexOf(_currentProp);
-				if (_currentPropValidIndex < 0)
-				{
-					throw "Invalid Property " + _currentProp;
-					return;
-				}
-				switch(_currentProp)
-				{
-					case 'nameLabel':
-						var conditionNameExist = DoesConditionNameExist(_currentProp);
-						if (conditionNameExist == true)
-						{
-							throw "Condition Name " + _currentProp + " already exisits."
-							return;
-						}
-						else if(_currentProp.length <= 0)
-						{
-							throw "Condition name must be more than 0 characters: " + _currentProp;
-							return;
-						}
-						break;
-					case 'deviceType':
-						var validDeviceType = IsDeviceTypeValid(_currentProp);
-						if (validDeviceType == false || _currentProp == 'keyboard')
-						{
-							throw 'Invalid device type: ' + _currentProp;
-							return;
-						}
-						break;
-					case 'positionValues':
-						var _currentPropLength = _currentProp.length;
-						if (_currentPropLength < 0)
-						{
-							throw "positionValues must contain at least one value"
-							return;
-						}
-						switch(inputPositionConditionParams['deviceType'])
-						{
-							case 'mouse':
-								if (_currentPropLength > 2)
-								{
-									throw "mouse positionValues cannot be more than two"
-									return;
-								}
-								break;
-							case 'pad':
-								if (_currentPropLength > 6)
-								{
-									throw "pad positionValues cannot be more than six"
-									return;
-								}
-								break;
-						}
-
-						break;
-					default:
-						break;
-
-				}
-				returnArray.push(reqInputConditionProps.splice(_currentPropValidIndex, 1))
-			}
-
-			if (reqInputConditionProps.length > 0)
-			{
-				throw "Missing properties: " + reqInputConditionProps.toString();
-				return;
-			}
-
-
-			return returnArray;			
-		}
-	}
-	/*
 		inputButtonConditionArray[i] = {
-			"inputCodes": [array of input coes]
+			"inputCodes": [array of input codes]
 			"deviceType": "keyboard", "pad", or "mouse",
 			"eventType": "up" or "down" - button is up or button is down, it's that simple.
 			"nameLabel": string containing the name of the condition
@@ -235,7 +136,7 @@ function GameMaster(_gameObserver, _inputDevice){
 				newInputConditionObj[currentProp] = MakeCopyOfObject(currentInputCodeObj[currentProp])		
 			}
 
-			newInputConditionObj["conditionType"] = "input" + currentInputCodeObj["deviceType"] + "Button"
+			newInputConditionObj["conditionType"] = "button"
 			_conditions[newInputConditionObj.nameLabel] = newInputConditionObj;
 			returnConditionArray.push(newInputConditionObj)
 
@@ -258,6 +159,12 @@ function GameMaster(_gameObserver, _inputDevice){
 					return;
 				}
 				var _currentProp = inputButtonConditionParams[_currentPropString]
+				if (!_currentProp)
+				{
+					throw "Undefined is an invalid property value: " + _currentPropString;
+					return;
+				}
+
 				switch(_currentPropString)
 				{
 					case 'nameLabel':
@@ -319,6 +226,114 @@ function GameMaster(_gameObserver, _inputDevice){
 
 			return returnArray;			
 		}
+		return returnConditionArray;
+	}
+	/*
+	inputMoveConditionParamsArray[i] = {
+		"position":[array of x,y or z variables (pad has z variables for the squeeze triggers)]
+			- When the deviceType is mouse, only 2 numbers can be passed in at max or an error will be thrown
+			- When the device type is pad,  only 6 numbers can be passed in at max or an error will be thrown
+		"deviceType": "pad" or "mouse",
+		"nameLabel": string containing the name of the condition
+	}
+	*/
+	function CreateInputMoveConditions(params)
+	{
+		var paramsLength = params.length;
+		var returnConditionArray = [];
+
+		for (iiMoveCondition = 0; iiMoveCondition < paramsLength; iiMoveCondition++)
+		{
+			var currentMoveCondition = params[iiMoveCondition];
+			_CheckInputMoveCondition(currentMoveCondition);
+			var moveConditionKeys = Object.keys(currentMoveCondition);
+			var moveConditionKeyLength = moveConditionKeys.length;
+			var newMoveCondition = {};
+
+			for (iiMoveConditionKey = 0; iiMoveConditionKey < moveConditionKeyLength; iiMoveConditionKey++)
+			{
+				var moveConditionPropName = moveConditionKeys[iiMoveConditionKey];
+				var moveConditionProp = currentMoveCondition[moveConditionPropName];
+				newMoveCondition[moveConditionPropName] = MakeCopyOfObject(moveConditionProp);
+			}
+			newMoveCondition['conditionType'] = 'move'
+			_conditions[newMoveCondition.nameLabel] = newMoveCondition;
+			returnConditionArray.push(newMoveCondition);
+
+		}
+
+		function _CheckInputMoveCondition(inputCondition)
+		{
+			var inputConditionKeys = Object.keys(inputCondition);
+			var conditionKeyLength = inputConditionKeys.length;
+			var _knownMoveDeviceTypes = ['pad', 'mouse']
+			var _knownInputMoveProps = ['position', 'deviceType', 'nameLabel'];
+			var knownMovePropLength = _knownInputMoveProps.length;
+			for (iiMoveProp = 0; iiMoveProp < knownMovePropLength; iiMoveProp++)
+			{
+				var _currentKnownPropName = _knownInputMoveProps[iiMoveProp]
+				var _knownPropIndex = inputConditionKeys.indexOf(_currentKnownPropName)
+				if (_knownPropIndex < 0)
+				{
+					throw "Missing Input Move Condition property: " + _currentKnownPropName;
+					return;
+				}
+			}
+
+			for (iiConditionKey = 0; iiConditionKey < conditionKeyLength; iiConditionKey++)
+			{
+				var currentPropName = inputConditionKeys[iiConditionKey];
+				switch (currentPropName)
+				{
+					case 'position':
+						switch(inputCondition.deviceType)
+						{
+							case 'pad':
+								var padPositionArrayLength = inputCondition[currentPropName].length;
+								if (padPositionArrayLength < 0 || padPositionArrayLength > 6)
+								{
+									throw "Invalid Pad Position Array Length: " + padPositionArrayLength;
+									return;
+								}
+								break;
+							case 'mouse':
+								var mousePositionArrayLength = inputCondition[currentPropName].length;
+								if (mousePositionArrayLength < 0 || mousePositionArrayLength > 2)
+								{
+									throw "Invalid Mouse Position Array Lenth: " + mousePositionArrayLength;
+									return;
+								}
+								break;
+							default:
+								throw "Invalid deviceType for position: " + inputCondition.deviceType;
+								return;
+								break;
+						}
+					case 'deviceType':
+						var currentDeviceType = inputCondition.deviceType
+						var deviceTypeIndex = _knownMoveDeviceTypes.indexOf(currentDeviceType);
+						if (deviceTypeIndex < 0)
+						{
+							throw "Invalid deviceType: " + currentDeviceType;
+							return;
+						}
+						break;
+					case 'nameLabel':
+						var currentNameLabel = inputCondition.nameLabel
+						var nameLabelExist = DoesConditionNameExist(currentNameLabel)
+						if (nameLabelExist == true)
+						{
+							throw "nameLabel already exists: " + currentNameLabel;
+							return;
+						}
+						break;
+					default:
+						throw "Invalid Input Move Condition Property: " + inputCondition;
+						break;
+				}
+			}
+		}
+
 		return returnConditionArray;
 	}
 	/*
@@ -450,9 +465,140 @@ function GameMaster(_gameObserver, _inputDevice){
 
 		return returnConditionArray;
 	}
-	function CreateActions(params)
+	/*
+		gameObjectActionParamsArray[i] = {
+			objectArray:{
+				objectType:[],
+				libraryType:[],
+				objectLabel:[]
+  				conditionObjects: boolean indicating true or false for including objects from the conditions this action is attached to in a given rule
+			},
+			propertyName: name of property action is being taken one
+			operative: "add", "set", or "subtract"
+			propertValue: value which the property will be used to operate on the property value
+			nameLabel: name of the action
+			
+		}
+	*/
+	function CreateGameObjectActions(params)
 	{
+		var returnActionArray = [];
+		var paramsLength = params.length;
 
+		for (iiGameObjectAction = 0; iiGameObjectAction < paramsLength; iiGameObjectAction++)
+		{
+			var currentGameObjectAction = params[iiGameObjectAction];
+			_ChecktGameObjectAction(currentGameObjectAction);
+
+			var newGameObjectAction = MakeCopyOfObject(currentGameObjectAction);
+
+			newGameObjectAction['actionType'] = 'gameObject'
+			_actions[newGameObjectAction.nameLabel] = newGameObjectAction;
+			returnActionArray.push(newGameObjectAction);
+		}
+
+		function _ChecktGameObjectAction(inputGameObjectAction)
+		{
+			var keysOfAction = Object.keys(inputGameObjectAction)
+			var keysLength = keysOfAction.length;
+			for (iiKey = 0; iiKey < keysLength; iiKey++)
+			{
+				var currentKeyName = keysOfAction[iiKey];
+				var currentKey = inputGameObjectAction[currentKeyName];
+				switch (currentKeyName)
+				{
+					case 'objectArray':
+						var objectArrayKeys = Object.keys(currentKey)
+						var objectArrayKeysLength = objectArrayKeys.length;
+						for (iiObjectArrayKey = 0; iiObjectArrayKey < objectArrayKeysLength; iiObjectArrayKey)
+						{
+							var currentObjArrayKeyName = objectArrayKeys[iiObjectArrayKey];
+							var currentObjArrayKey = currentKey[currentObjArrayKeyName];
+							switch (currentObjArrayKeyName)
+							{
+								case 'conditionObjects':
+									var isBoolean = typeof currentObjArrayKey;
+									if (isBoolean != 'boolean')
+									{
+										throw "Invalid conditionObjects property"
+										return;
+									}
+									break;
+								case 'objectType':
+									break;
+								case 'libraryType':
+									break;
+								case 'objectLabel':
+									break;
+								default:
+									throw "Invalid objetArray property: " + currentObjArrayKeyName;
+									return;
+									break;
+							}
+						}
+						break;
+					case 'propertyName':
+						break;
+					case 'operative':
+						var _validOperatives = ['add','subtract','set']
+						var validOperativeKeyIndex = _validOperatives.indexOf(currentKey)
+						if (validOperativeKeyIndex < 0)
+						{
+							throw "Invalid operative: " + currentKey;
+							return;
+						}
+						break;
+					case 'propertyValue':
+						break;
+					case 'nameLabel':
+						var nameLabelExist = DoesActionNameExist(currentKey);
+						if (nameLabelExist == true)
+						{
+							throw "Action name " + currentKey + " already exists."
+							return;
+						}
+						break;
+				}
+			}
+		}
+		return returnActionArray;
+	}
+	/*
+		gameLibaryActionParams[i] = {
+			inputObjects:{
+				objectType:[],
+				libraryType:[], (yes, you can add other librarie's objects into other libraries via a game action)
+				objectLabel:[],
+				conditionObjects: boolean indicating whether or not to include the gameObjects from the condition(s) attached to the same game rule the action is attached to.
+			}
+			libraryNames:[] array of libraries that will be affected
+			operative: 'add' or 'remove' (you can only add objects to a library or remove them from that library)
+		}
+	*/
+	function CreateGameLibraryAction(params)
+	{
+		var returnActionArray = [];
+		var paramsLength = params.length;
+		for (iiGameLibAction = 0; iiGameLibAction < paramsLength; iiGameLibAction++)
+		{
+			var currentGameLibAction = params[iiGameLibAction];
+
+		}
+
+		function _CheckGameLibraryAction(inputGameLibAction)
+		{
+			var libActionKeys = Object.keys(inputGameLibAction);
+			var libActionKeysLength = libActionKeys.length;
+			for (iiLibActionProp = 0; iiLibActionProp < libActionKeysLength; iiLibActionProp++)
+			{
+				var currentLibActionPropName = libActionKeys[iiLibActionProp];
+				var currentLibActionProp = inputGameLibAction[currentLibActionPropName];
+				switch(currentLibActionPropName)
+				{
+
+				}
+			}
+		}
 	}
 	function CreateRules(params)
 	{
@@ -466,6 +612,11 @@ function GameMaster(_gameObserver, _inputDevice){
 	{
 		var currentConditionNames = Object.keys(_conditions);
 		return currentConditionNames;
+	}
+	function GetActionNames()
+	{
+		var currentActionNames = Object.keys(_actions)
+		return currentActionNames;
 	}
 
 

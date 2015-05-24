@@ -192,11 +192,7 @@ describe("GameLibrary", function(){
 			testLibrary.AddToLibrary(undefined)
 		}
 
-		expect(_testLibraryAddToLibraryInvalidInputString_ThrowError).toThrow("Parameter must be an array.")
 		expect(_testLibraryAddToLibraryInvalidInputNumber_ThrowError).toThrow("Parameter is invalid.")
-		expect(_testLibraryAddToLibraryInvalidInputObject_ThrowError).toThrow("Parameter must be an array.")
-		expect(_testLibraryAddToLibraryInvalidInputFunction_ThrowError).toThrow("Parameter must be an array.")
-		expect(_testLibraryAddToLibraryInvalidInputBoolean_ThrowError).toThrow("Parameter must be an array.")
 		expect(_testLibraryAddToLibraryInvalidInputUndefined_ThrowError).toThrow("Parameter is invalid.")
 	})
 	describe(" -> gameObjects", function(){
@@ -248,239 +244,6 @@ describe("GameLibrary", function(){
 			newGamePiece_Object = newGamePiece_ObjectArray[0];
 
 		})
-		it("Given the attempt that an input for GameLibrary.AddToLibrary() contains a libraryType property that doesn't exist or is undefined, an error should be thrown", function (){
-
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object
-			}
-
-			var _addtoLibArray = []
-
-			_addtoLibArray.push(_addtoLibParams)
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-
-			var _testAddGameObjectToLibrary = function ()
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibArray);
-			}
-			expect(_testAddGameObjectToLibrary).toThrow("Library type " + undefined + " does not exist");
-		})
-		it("Given the attempt that an input for GameLibrary.AddToLibrary() contains a libraryType property that's an empty string, an error should be thrown", function (){
-			
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object,
-				'libraryType':''
-			}
-
-			var _addtoLibArray = []
-
-			_addtoLibArray.push(_addtoLibParams)
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-
-			var _testAddGameObjectToLibrary = function ()
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibArray);
-			}
-			expect(_testAddGameObjectToLibrary).toThrow("Library type " + '' + " does not exist");
-		})
-		it("Given the attempt that an input for GameLibrary.AddToLibrary() contains a libraryType property that's null, an error should be thrown", function () {
-	
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object,
-				'libraryType':null
-			}
-
-			var _addtoLibArray = []
-
-			_addtoLibArray.push(_addtoLibParams)
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-
-			var _testAddGameObjectToLibrary = function ()
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibArray);
-			}
-			expect(_testAddGameObjectToLibrary).toThrow("Library type " + null + " does not exist");	
-		})
-		it("Given an existing gameObject, it's reference should be able to be stored in a game library using GameLibrary.AddToLibrary()", function(){
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object,
-				'libraryType': _newGameLibString
-			}
-
-			var _addtoLibArray = []
-
-			_addtoLibArray.push(_addtoLibParams)
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-
-			var _testAddGameObjectToLibrary = function ()
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibArray);
-			}
-			expect(_testAddGameObjectToLibrary).not.toThrow();
-
-			var _currentLibs = MyGameLibrary.GetLibrary(libStringArray)
-
-			var testLibrary = _currentLibs[libStringArray[0]];
-
-			expect(testLibrary.objectLib[0]).toEqual(newGamePiece_Object);
-		})
-		it("Given a gameObject has been added to a game Library, it should be able to be removed using GameLibrary.RemoveFromLibrary() function", function (){
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object,
-				'libraryType': _newGameLibString
-			}
-
-			var _addtoLibArray = []
-
-			_addtoLibArray.push(_addtoLibParams)
-
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-			MyGameLibrary.AddToLibrary(_addtoLibArray);
-
-			var _libGameObjArray = [newGamePiece_Object]
-
-
-			var _testGameLibraryRemoveFromLibraryFunction = function()
-			{
-				MyGameLibrary.RemoveFromLibrary(_addtoLibArray)	
-			}
-
-			expect(_testGameLibraryRemoveFromLibraryFunction).not.toThrow();
-
-			var _libArray = MyGameLibrary.GetLibrary(libStringArray)
-
-			expect(_libArray[libStringArray[0]].objectLib.length).not.toBeGreaterThan(0)
-
-		})
-		it("Given multple existing gameObjects, their references should be able to be stored in a game library using GameLibrary.AddToLibrary()", function(){
-			
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-			var _cloneOptions = {
-				'howMany': 10
-			}
-			var _cloneNewGamePieceArray = MyGameManager.CloneGameObject(newGamePiece_Object, _cloneOptions);
-			
-			var _addtoLibParamsArray = [];
-
-			for (iiCloneObj = 0; iiCloneObj < _cloneNewGamePieceArray.length; iiCloneObj++)
-			{
-				var _addToLibParams = {
-					'inputObject': _cloneNewGamePieceArray[iiCloneObj],
-					'libraryType': _newGameLibString
-				}
-
-				_addtoLibParamsArray.push(_addToLibParams);
-			}
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-			
-			var _testLibraryAddToLibraryMultipleObjectsFunction = function()
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibParamsArray);
-			}
-
-			expect(_testLibraryAddToLibraryMultipleObjectsFunction).not.toThrow();
-
-			var _libArray = MyGameLibrary.GetLibrary(libStringArray)
-			var testLibrary = _libArray[libStringArray];
-
-			expect(testLibrary.objectLib.length).toEqual(_addtoLibParamsArray.length);
-
-		})
-		it("Given multiple existing gameObjects that have been added to a game Library, they should be able to be removed using GameLibrary.RemoveFromLibary() function ", function (){
-
-			var _newGameLibString = 'Game Pieces'
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-			var _cloneOptions = {
-				'howMany': 10
-			}
-			var _cloneNewGamePieceArray = MyGameManager.CloneGameObject(newGamePiece_Object, _cloneOptions);
-
-			var _addtoLibParamsArray = [];
-
-			for (iiCloneObj = 0; iiCloneObj < _cloneNewGamePieceArray.length; iiCloneObj++)
-			{
-				var _addToLibParams = {
-					'inputObject': _cloneNewGamePieceArray[iiCloneObj],
-					'libraryType': _newGameLibString
-				}
-
-				_addtoLibParamsArray.push(_addToLibParams);
-			}
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-
-		 	MyGameLibrary.AddToLibrary(_addtoLibParamsArray);
-			
-
-			var _testGameLibraryRemoveFromLibraryMultipleObjectsFunction = function()
-			{
-				MyGameLibrary.RemoveFromLibrary(_addtoLibParamsArray)	
-			}
-
-			expect(_testGameLibraryRemoveFromLibraryMultipleObjectsFunction).not.toThrow();
-
-			var _libArray = MyGameLibrary.GetLibrary(libStringArray)
-
-			expect(_libArray[_newGameLibString].objectLib.length).not.toBeGreaterThan(0)
-
-		})
-		it("Given an exisiting gameObject already in a library, it cannot be added again using GameLibrary.AddToLibrary() again without throwing an error", function (){
-			var _newGameLibString = 'Game Pieces'
-
-			var libStringArray = []
-			libStringArray.push(_newGameLibString);
-
-			var _addtoLibParams = {
-				'inputObject':newGamePiece_Object,
-				'libraryType': _newGameLibString
-			}
-			var _addtoLibArray = []
-			_addtoLibArray.push(_addtoLibParams)
-
-
-			MyGameLibrary.AddLibraryType(libStringArray);
-			MyGameLibrary.AddToLibrary(_addtoLibArray);
-
-			var _testGameLibraryAddObjectThatAlreadyExists_ThrowError = function() 
-			{
-				MyGameLibrary.AddToLibrary(_addtoLibArray);
-			}
-			expect(_testGameLibraryAddObjectThatAlreadyExists_ThrowError).toThrow("Object " + newGamePiece_Object + " already exists in library " + _newGameLibString)
-		})
 		it("Given an exisiting gameObject, it's reference should be able to be stored in a game library using the library's AddToLibrary() function", function (){
 			var _newGameLibString = 'Game Pieces'
 			var libStringArray = []
@@ -531,7 +294,7 @@ describe("GameLibrary", function(){
 
 			expect(_testLibraryRemomveFromLibraryMultipleObjectsFunction).not.toThrow();
 
-			expect(testLibrary.objectLib.length).toEqual(0);
+			expect(testLibrary.GetLength()).toEqual(0);
 			
 		})
 		it("When a gameObject is removed from a library using it's RemoveFromLibrary() function, it should be returned by the function", function(){
@@ -599,7 +362,7 @@ describe("GameLibrary", function(){
 			testLibrary.AddToLibrary(_cloneNewGamePieceArray);
 			testLibrary.RemoveFromLibrary(_cloneNewGamePieceArray);
 
-			expect(testLibrary.objectLib.length).toEqual(0);
+			expect(testLibrary.GetLength()).toEqual(0);
 
 		})
 		it("When multiple gameobjects are removed from a library, they should all be returned by the function", function (){
@@ -649,7 +412,7 @@ describe("GameLibrary", function(){
 			{
 				testLibrary.AddToLibrary(_addtoLibArray);
 			}
-			expect(_testGameLibraryAddObjectThatAlreadyExists_ThrowError).toThrow("Object " + newGamePiece_Object + " already exists in library " + _newGameLibString)
+			expect(_testGameLibraryAddObjectThatAlreadyExists_ThrowError).toThrow("Object " + newGamePiece_Object.typeName + " already exists in library " + _newGameLibString)
 
 		})
 
