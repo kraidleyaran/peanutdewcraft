@@ -76,6 +76,8 @@ function GameLibrary()
 				this.GetName = GetName;
 				this.GetLength = GetLength;
 
+				this.GetObjLabelList = GetObjLabelList;
+
 				function GetName()
 				{
 					return _libName;
@@ -208,9 +210,9 @@ function GameLibrary()
 								}
 								break;
 							case 'objectLabels':
-								var objLabelArray = _GetFromLibraryByObjetLabel(params.objectLabels)
-								var returnObjArrayLength = returnObjArray.length;
-								for (iiObj = 0; iiObj < returnObjArrayLength; iiObj++)
+								var objLabelArray = _GetFromLibraryByObjectLabel(params.objectLabels)
+								var objLabelArrayLength = objLabelArray.length;
+								for (iiObj = 0; iiObj < objLabelArrayLength; iiObj++)
 								{
 									var currentObj = objLabelArray[iiObj];
 									var objIndex = returnObjArray.indexOf(currentObj);
@@ -260,7 +262,7 @@ function GameLibrary()
 						return returnObjTypeArray;
 					}
 
-					function _GetFromLibraryByObjetLabel(inputLabelStringArray)
+					function _GetFromLibraryByObjectLabel(inputLabelStringArray)
 					{
 						var inputLabelStringArrayLength = inputLabelStringArray.length;
 						var returnObjLabelArray = [];
@@ -274,10 +276,12 @@ function GameLibrary()
 								var labelIdArrayLength = objLabelIdArray.length;
 								for (iiObjLabelId = 0; iiObjLabelId < labelIdArrayLength; iiObjLabelId++)
 								{
-									returnObjLabelArray.push(_objLibrary[objLabelIdArray[iiObjLabelId]])
+									var currentObjIndex = objLabelIdArray[iiObjLabelId];
+									returnObjLabelArray.push(_objLibrary[currentObjIndex]);
 								}
 							}
 						}
+						return returnObjLabelArray;
 					}
 				}
 				function RemoveFromLibrary(params)
@@ -384,9 +388,14 @@ function GameLibrary()
 
 					return returnObjectIdArray;
 				}
+				function GetObjLabelList()
+				{
+					var returnObjLabelArray = Object.keys(_objLabelList);
+					return returnObjLabelArray;
+				}
 				return this;
 			}
-			var newCustomLib = newCustomLibrary();
+			var newCustomLib = new newCustomLibrary();
 			customLibs[newCustomLib.GetName()] = newCustomLib;
 		}
 	}

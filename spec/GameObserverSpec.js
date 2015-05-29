@@ -33,7 +33,7 @@ describe("GameObserver", function (){
 			'propName':'test',
 			'required': false,
 			'dataValue': 'boolean',
-			'defaultPropValue': false
+			'defaultPropValue': true
 		};
 
 		gamePieceProto = {
@@ -67,7 +67,6 @@ describe("GameObserver", function (){
 		}
 
 		clonedGamePieceArray = MyGameManager.CloneGameObject(newGamePiece_Object, cloneGamePieceOptions)
-
 		_addGameObjectsArray = clonedGamePieceArray.concat(newGamePiece_ObjectArray);
 		gamePieceLibString = 'Game Pieces'
 		MyGameLibrary.AddLibraryType([gamePieceLibString]);
@@ -125,46 +124,49 @@ describe("GameObserver", function (){
 
 		var NewerGamePieceLabel = 'newer gamepiece'
 		var cloneNewerGamePieceOptions = {
-			'howMany': 1,
+			'howMany': 5,
 			'objectLabels':[NewerGamePieceLabel]
 		};
+
 		var newerGamePieceObjectArray = MyGameManager.CloneGameObject(newGamePiece_Object, cloneNewerGamePieceOptions);
 		var newerGamePieceLibString = 'Newer Game Pieces';
 		MyGameLibrary.AddLibraryType([newerGamePieceLibString]);
+
 		var newerGameLib = _gameLibs[newerGamePieceLibString];
-		console.log(_gameLibs);
+
 		newerGameLib.AddToLibrary(newerGamePieceObjectArray);
+		var newerGameObjArray = newerGameLib.GetFromLibrary({'allObjs':true})
 
-		var messageArray = [];
+		var newMessageArray = [];
 
-		messageArray[0]  = {
+		newMessageArray[0]  = {
 			'peer':'value',
 			'propertyName':'test',
 			'command':'set',
 			'commandValue': false
 		}
 
-		var messageObject = {
-			'message': messageArray,
+		var newMessageObject = {
+			'message': newMessageArray,
 			'receiver':{
 				'objectLibraries':[newerGamePieceLibString]
 			}
 		}
 
-		MyGameObserver.SendMessage(messageObject)
+		MyGameObserver.SendMessage(newMessageObject);
 
 		var _currentTestLib = _gameLibs[gamePieceLibString]
 		var _currentTestLibLength = _currentTestLib.GetLength();
 		var _libObjs = _currentTestLib.GetFromLibrary({'allObjs':true})
+		
 		for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 		{
 			var _currentTestObject = _libObjs[iiObject];
 			expect(_currentTestObject.GetProperty('test')).toEqual(true)
 		}
-
-		expect(newerGameLib.objectLib[0].GetProperty('test')).toEqual(false)
+		expect(newerGameObjArray[0].GetProperty('test')).toEqual(false)
 	})
-	it("Messages should be able to be sent to gameObjects with a certain objectLabel", function(){
+	it("Messages should be able to be sent to gameObjects with a certain object labels", function(){
 	
 		var messageArray = [];
 		
@@ -185,10 +187,11 @@ describe("GameObserver", function (){
 		MyGameObserver.SendMessage(messageObject)
 
 		var _currentTestLib = _gameLibs[gamePieceLibString];
-
-		for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+		var testLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+		var testLibObjArrayLength = testLibObjArray.length;
+		for (iiObject = 0; iiObject < testLibObjArrayLength; iiObject++)
 		{
-			var _currentTestObject = _currentTestLib.objectLib[iiObject];
+			var _currentTestObject = testLibObjArray[iiObject];
 			if (_currentTestObject.GetLabel() == knownObjectLabel)
 			{
 				expect(_currentTestObject.GetProperty('test')).toEqual(false);	

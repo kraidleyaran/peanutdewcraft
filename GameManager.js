@@ -831,7 +831,8 @@ function GameManager(){
 									{
 										if (otherPeerTypeIndex < 0)
 										{
-											that.SetProperty(currentPropName, currentValue)			
+											that.SetProperty(currentPropName, currentValue)	
+											returnValue = true;		
 										}
 									}
 									else if (otherPeerTypeIndex > -1)
