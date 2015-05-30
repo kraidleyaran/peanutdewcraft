@@ -198,8 +198,9 @@ function GameLibrary()
 						{
 							case 'objectTypes':
 								var objTypeArray = _GetFromLibraryByObjectType(params.objectTypes)
-								var returnObjArrayLength = returnObjArray.length;
-								for (iiObj = 0; iiObj < returnObjArrayLength; iiObj++)
+								var objTypeArrayLength = objTypeArray.length;
+
+								for (iiObj = 0; iiObj < objTypeArrayLength; iiObj++)
 								{
 									var currentObj = objTypeArray[iiObj];
 									var objIndex = returnObjArray.indexOf(currentObj);
@@ -254,11 +255,11 @@ function GameLibrary()
 								var objTypeIdsLength = objTypeIds.length;
 								for (iiObjId = 0; iiObjId < objTypeIdsLength; iiObjId++)
 								{
-									returnObjTypeArray.push(_objLibrary[iiObjId]);
+									var objId = objTypeIds[iiObjId];
+									returnObjTypeArray.push(_objLibrary[objId])
 								}
 							}
 						}
-
 						return returnObjTypeArray;
 					}
 

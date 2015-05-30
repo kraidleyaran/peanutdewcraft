@@ -155,19 +155,16 @@ function GameObserver(_gameLibrary, _gameManager)
 					for (iiLib = 0; iiLib < libLength; iiLib++)
 					{
 						var currentLibNameString = _libTypes[iiLib];
-						var libNameIndex = receivedList.objectLibraries.indexOf(currentLibNameString);
 						
 						var currentLib = _gameLibs[currentLibNameString];
 
 						var objTypeExistInLib = currentLib.DoesObjectTypeExistInLibrary(currentObjType);
-
-						if (objTypeExistInLib == false || libNameIndex >= 0)
+						if (objTypeExistInLib == false)
 						{
 							continue;
 						}
 						
-						var currentObjType_List = currentLib.GetFromLibrary('objectTypes':[currentObjType])
-
+						var currentObjType_List = currentLib.GetFromLibrary({'objectTypes':[currentObjType]})
 						var objTypeListLength = currentObjType_List.length
 						for (iiObj = 0; iiObj < objTypeListLength; iiObj++)
 						{
@@ -175,17 +172,12 @@ function GameObserver(_gameLibrary, _gameManager)
 							var currentObj = currentObjType_List[iiObj];
 
 							var objIndex = receivedList.gameObjects.indexOf(currentObj);
-							if (objIndex >= 0)
-							{
-								continue;
-							}
-							else
+							if (objIndex < 0)
 							{
 								var recValue = currentObj.Receive(message);
 								returnValueArray.push(recValue)
-								receivedList.gameObjects.push(currentObject);	
+								receivedList.gameObjects.push(currentObject);
 							}
-							
 						}
 					}
 				}	

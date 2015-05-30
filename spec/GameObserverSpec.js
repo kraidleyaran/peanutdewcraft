@@ -241,12 +241,15 @@ describe("GameObserver", function (){
 				'gameObjectTypes':[awesomeGamePiece.typeName]
 			}
 		}
-
 		MyGameObserver.SendMessage(messageObject);
+
 		var _currentTestLib = _gameLibs[gamePieceLibString];
-		for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+		var _currentTestLibLength = _currentTestLib.GetLength();
+
+		for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 		{
-			var _currentTestObject = _currentTestLib.objectLib[iiObject];
+			var _currentTestObjectArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestObject = _currentTestObjectArray[iiObject];
 			if (_currentTestObject.GetType() == awesomeGamePiece.typeName)
 			{
 				expect(_currentTestObject.GetProperty('test')).toEqual(false);	
@@ -367,9 +370,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _currentTestLibObjArray[iiObject];
 				expect(_currentTestObject.GetProperty('test')).toEqual(false);
 			}
 		}
@@ -389,16 +395,19 @@ describe("GameObserver", function (){
 			'message': messageArray
 		}
 
-		MyGameObserver.SendMessage(messageObject)	
+		MyGameObserver.SendMessage(messageObject);
 
 		var gameLibTypes = MyGameLibrary.GetLibraryTypes();
 
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
-			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]];
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _currentTestLibObjArray[iiObject];
 				expect(_currentTestObject.GetProperty(newPropertyString)).toEqual(true);
 			}
 		}
@@ -457,9 +466,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _currentTestLibObjArray[iiObject];
 				expect(_currentTestObject.GetProperty(newPropertyString)).toEqual(2);
 			}
 		}
@@ -486,9 +498,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _currentTestLibObjArray[iiObject];
 				var _testCurrentObjectGetPropertyThatWasRemoved_ThrowError = function()
 				{
 					_currentTestObject.GetProperty('test')
@@ -519,9 +534,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];			
+				var _currentTestObject = _currentTestLibObjArray[iiObject];			
 				expect(_currentTestObject.GetProperty('test')).toEqual(null)
 			}
 		}
@@ -561,9 +579,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];	
+				var _currentTestObject = _currentTestLibObjArray[iiObject];	
 				expect(_currentTestObject.GetProperty('test')).toEqual(false)
 			}
 		}	
@@ -623,9 +644,12 @@ describe("GameObserver", function (){
 		for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 		{
 			var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-			for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+			var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+			var _currentTestLibLength = _currentTestLib.GetLength();
+
+			for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 			{
-				var _currentTestObject = _currentTestLib.objectLib[iiObject];
+				var _currentTestObject = _currentTestLibObjArray[iiObject];
 				expect(_currentTestObject.GetProperty(newPropertyString)).toEqual(2);
 			}
 		}
@@ -800,9 +824,12 @@ describe("GameObserver", function (){
 			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 			{
 				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+				var _currentTestLibLength = _currentTestLib.GetLength();
+
+				for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 				{
-					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					var _currentTestObject = _currentTestLibObjArray[iiObject];
 					expect(_currentTestObject.GetProperty(newProtoProp.propName)).toEqual(true);
 				}
 			}	
@@ -825,9 +852,12 @@ describe("GameObserver", function (){
 			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 			{
 				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+				var _currentTestLibLength = _currentTestLib.GetLength();
+
+				for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 				{
-					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					var _currentTestObject = _currentTestLibObjArray[iiObject];
 					expect(_currentTestObject.GetProperty('test')).toEqual(0);
 				}
 			}			
@@ -844,9 +874,12 @@ describe("GameObserver", function (){
 			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 			{
 				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+				var _currentTestLibLength = _currentTestLib.GetLength();
+
+				for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 				{
-					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					var _currentTestObject = _currentTestLibObjArray[iiObject];
 					var _testGetPropertyAfterMessageFromProtoRemoved_ThrowError = function()
 					{
 						_currentTestObject.GetProperty('test')	
@@ -868,9 +901,12 @@ describe("GameObserver", function (){
 			for (iiLib = 0; iiLib < gameLibTypes.length; iiLib++)
 			{
 				var _currentTestLib = _gameLibs[gameLibTypes[iiLib]]
-				for (iiObject = 0; iiObject < _currentTestLib.objectLib.length; iiObject++)
+				var _currentTestLibObjArray = _currentTestLib.GetFromLibrary({'allObjs':true});
+				var _currentTestLibLength = _currentTestLib.GetLength();
+				
+				for (iiObject = 0; iiObject < _currentTestLibLength; iiObject++)
 				{
-					var _currentTestObject = _currentTestLib.objectLib[iiObject];
+					var _currentTestObject = _currentTestLibObjArray[iiObject];
 					expect(_currentTestObject.GetType()).toEqual(newTypeNameString)
 				}
 			}	
